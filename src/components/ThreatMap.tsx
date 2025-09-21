@@ -1,197 +1,197 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Globe } from "lucide-react";
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from "react-simple-maps";
 import { motion } from "framer-motion";
 import { Tooltip } from "react-tooltip";
-import { useState } from "react";
 
-const geoUrl =
-  "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries.json";
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
+const SEVERITIES = ["critical", "high", "medium", "low"];
 
 const threatLocations = [
-  { country: "Russia", lat: 55.7558, lng: 37.6173, threats: 50, severity: "critical", description: "Leading cybercrime hub; ransomware (e.g., LockBit) and APTs dominate." },
-  { country: "Ukraine", lat: 50.4501, lng: 30.5234, threats: 45, severity: "high", description: "Extortion, malware, and dark web markets; high cybercrime activity." },
-  { country: "China", lat: 39.9042, lng: 116.4074, threats: 40, severity: "critical", description: "State-sponsored espionage, Volt Typhoon campaigns, and 150% rise in attacks." },
-  { country: "USA", lat: 40.7128, lng: -74.0060, threats: 35, severity: "high", description: "Botnets, eCrime, and ~10% of global attack origins." },
-  { country: "Nigeria", lat: 6.5244, lng: 3.3792, threats: 30, severity: "medium", description: "Phishing, BEC scams, and financial fraud prevalent." },
-  { country: "Romania", lat: 44.4268, lng: 26.1025, threats: 25, severity: "medium", description: "Cybercrime tools and skimming operations." },
-  { country: "North Korea", lat: 39.0392, lng: 125.7625, threats: 28, severity: "critical", description: "State-sponsored hacks, 304 incidents, crypto heists." },
-  { country: "Iran", lat: 35.6892, lng: 51.3890, threats: 22, severity: "high", description: "Targeted ransomware and espionage, e.g., IRGC-linked attacks." },
-  { country: "India", lat: 28.6139, lng: 77.2090, threats: 20, severity: "low", description: "Rising phishing and e-commerce fraud." },
-  { country: "Brazil", lat: -23.5505, lng: -46.6333, threats: 15, severity: "medium", description: "Credential stuffing and regional malware campaigns." },
+  { country: "Russia", lat: 55.7558, lng: 37.6173, threats: 50, severity: "critical", description: "Ransomware, APTs" },
+  { country: "China", lat: 39.9042, lng: 116.4074, threats: 40, severity: "critical", description: "Espionage, APT41" },
+  { country: "USA", lat: 37.0902, lng: -95.7129, threats: 35, severity: "high", description: "Botnets, eCrime" },
+  { country: "Iran", lat: 35.6892, lng: 51.389, threats: 22, severity: "high", description: "IRGC-linked ransomware" },
 ];
 
+const vulnerabilities = [
+  { country: "USA", lat: 38.9072, lng: -77.0369, cve: "CVE-2025-1234", severity: "critical", desc: "RCE in Apache module" },
+  { country: "India", lat: 28.6139, lng: 77.209, cve: "CVE-2025-9876", severity: "medium", desc: "SQLi in e-commerce app" },
+];
+
+const getColor = (sev: string) => {
+  switch (sev) {
+    case "critical": return "hsl(var(--destructive))";
+    case "high": return "hsl(25 95% 65%)";
+    case "medium": return "hsl(45 93% 70%)";
+    case "low": return "hsl(142 76% 60%)";
+    default: return "hsl(var(--muted-foreground))";
+  }
+};
+
+function randomizeThreats(threats: typeof threatLocations) {
+  return threats.map((t) => ({
+    ...t,
+    threats: Math.floor(Math.random() * 60 + 10),
+    severity: SEVERITIES[Math.floor(Math.random() * SEVERITIES.length)],
+  }));
+}
+
 export function ThreatMap() {
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const sortedThreats = [...threatLocations].sort((a, b) =>
-    sortOrder === "desc" ? b.threats - a.threats : a.threats - b.threats
-  );
+  const [liveThreats, setLiveThreats] = useState(threatLocations);
+  const [filter, setFilter] = useState<string[]>(SEVERITIES);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveThreats(randomizeThreats(threatLocations));
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <Card className="bg-gradient-to-br from-background via-card to-background border-border shadow-2xl">
+    <Card className="bg-background border-border shadow-2xl">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <motion.div
-            initial={{ rotate: -10 }}
-            animate={{ rotate: 0 }}
-            transition={{ type: "spring", stiffness: 120 }}
-          >
-            <Globe className="w-6 h-6 text-primary drop-shadow" />
+          <motion.div initial={{ rotate: -15 }} animate={{ rotate: 0 }} transition={{ type: "spring", stiffness: 100 }}>
+            <Globe className="w-7 h-7 text-primary drop-shadow animate-spin-slow" />
           </motion.div>
           <CardTitle className="text-foreground font-bold tracking-tight text-lg">
-            Global Cyber Threat Map (2025)
+            Global Threat & Vulnerability Map
           </CardTitle>
         </div>
       </CardHeader>
       <CardContent>
-        {/* Map Container */}
-        <div className="relative bg-card rounded-lg p-4 min-h-[400px] flex items-center justify-center border border-border/50">
+        <div className="mb-3 flex gap-3 flex-wrap justify-center">
+          {SEVERITIES.map((sev) => (
+            <button
+              key={sev}
+              className={`px-3 py-1 rounded-full border ${filter.includes(sev) ? "bg-primary text-white" : "bg-muted"}`}
+              onClick={() =>
+                setFilter((prev) =>
+                  prev.includes(sev) ? prev.filter((f) => f !== sev) : [...prev, sev]
+                )
+              }
+            >
+              {sev.charAt(0).toUpperCase() + sev.slice(1)}
+            </button>
+          ))}
+        </div>
+        <div className="relative bg-card rounded-lg p-3 min-h-[480px] border border-border/50">
           <ComposableMap
-            projectionConfig={{ scale: 130 }}
-            width={600}
-            height={360}
+            projectionConfig={{ scale: 150 }}
+            width={850}
+            height={450}
             style={{ width: "100%", height: "auto" }}
           >
-            <ZoomableGroup zoom={1} center={[10, 20]} maxZoom={15} minZoom={0.7}>
+            <ZoomableGroup zoom={1} center={[10, 20]} maxZoom={10} minZoom={0.7}>
               <Geographies geography={geoUrl}>
                 {({ geographies }) =>
-                  geographies.map((geo) => (
-                    <Geography
+                  geographies.map((geo, i) => (
+                    <motion.g
                       key={geo.rsmKey}
-                      geography={geo}
-                      fill="hsl(var(--card))"
-                      stroke="hsl(var(--border))"
-                      style={{
-                        default: { outline: "none" },
-                        hover: { fill: "hsl(var(--accent))", outline: "none", stroke: "hsl(var(--primary))" },
-                        pressed: { outline: "none" },
-                      }}
-                    />
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: i * 0.002 }}
+                    >
+                      <Geography
+                        geography={geo}
+                        fill="hsl(var(--muted)/0.15)"
+                        stroke="hsl(var(--border))"
+                        style={{
+                          default: { outline: "none" },
+                          hover: { fill: "hsl(var(--accent))", stroke: "hsl(var(--primary))" },
+                        }}
+                      />
+                    </motion.g>
                   ))
                 }
               </Geographies>
-              {threatLocations.map((loc, idx) => (
-                <Marker key={loc.country} coordinates={[loc.lng, loc.lat]}>
-                  <motion.circle
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: idx * 0.1, type: "spring", stiffness: 120 }}
-                    r={12}
-                    fill={`hsl(var(--cti-${loc.severity}))`}
+              {liveThreats
+                .filter((loc) => filter.includes(loc.severity))
+                .map((loc, idx) => (
+                  <Marker key={loc.country} coordinates={[loc.lng, loc.lat]}>
+                    <motion.circle
+                      r={12}
+                      fill={getColor(loc.severity)}
+                      stroke="hsl(var(--background))"
+                      strokeWidth={2}
+                      initial={{ scale: 0 }}
+                      animate={{
+                        scale: [0, 1.4, 1],
+                        opacity: [0.7, 1, 0.7],
+                        boxShadow: "0 0 20px 5px hsl(var(--destructive)/0.5)",
+                      }}
+                      transition={{
+                        delay: idx * 0.2,
+                        duration: 1.2,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                        ease: "easeInOut",
+                      }}
+                      data-tooltip-id={`threat-${loc.country}`}
+                      data-tooltip-html={`<b>${loc.country}</b><br/>Threats: ${loc.threats}<br/>Severity: ${loc.severity}<br/>${loc.description}`}
+                      style={{
+                        cursor: "pointer",
+                        filter: "drop-shadow(0 0 10px rgba(0,0,0,0.6))",
+                      }}
+                    />
+                    <motion.text
+                      x={16}
+                      y={6}
+                      fontSize={13}
+                      fill="hsl(var(--foreground))"
+                      className="font-bold"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: idx * 0.3 }}
+                    >
+                      {loc.country}
+                    </motion.text>
+                    <Tooltip id={`threat-${loc.country}`} />
+                  </Marker>
+                ))}
+              {vulnerabilities.map((vuln, idx) => (
+                <Marker key={vuln.cve} coordinates={[vuln.lng, vuln.lat]}>
+                  <motion.rect
+                    x={-6}
+                    y={-6}
+                    width={12}
+                    height={12}
+                    fill={getColor(vuln.severity)}
                     stroke="hsl(var(--foreground))"
-                    strokeWidth={2}
-                    style={{ cursor: "pointer", filter: "drop-shadow(0 0 8px hsl(var(--cti-${loc.severity})/0.5))" }}
-                    data-tooltip-id={`threat-${loc.country}`}
-                    data-tooltip-html={`
-                      <div style="text-align: left; padding: 10px;">
-                        <strong>${loc.country}</strong><br/>
-                        Threats: ${loc.threats}<br/>
-                        Severity: <span style="color:hsl(var(--cti-${loc.severity})); text-transform: capitalize;">${loc.severity}</span><br/>
-                        ${loc.description}
-                      </div>
-                    `}
-                  />
-                  <motion.circle
-                    r={18}
-                    fill="none"
-                    stroke={`hsl(var(--cti-${loc.severity}))`}
-                    strokeWidth={2}
-                    style={{ opacity: 0.5, pointerEvents: "none" }}
-                    animate={{
-                      scale: [1, 1.6, 1],
-                      opacity: [0.5, 0, 0.5],
-                    }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 2.5,
-                      delay: idx * 0.1,
-                    }}
+                    strokeWidth={1.5}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: [0, 1.3, 1] }}
+                    transition={{ delay: idx * 0.25, duration: 0.8 }}
+                    data-tooltip-id={`vuln-${vuln.cve}`}
+                    data-tooltip-html={`<b>${vuln.cve}</b><br/>Severity: ${vuln.severity}<br/>${vuln.desc}`}
                   />
                   <motion.text
-                    x={16}
-                    y={6}
-                    fontSize={13}
+                    x={14}
+                    y={5}
+                    fontSize={12}
                     fill="hsl(var(--foreground))"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: idx * 0.15 }}
+                    transition={{ delay: idx * 0.4 }}
                   >
-                    {loc.threats}
+                    {vuln.country}
                   </motion.text>
-                  <Tooltip
-                    id={`threat-${loc.country}`}
-                    place="top"
-                    style={{
-                      backgroundColor: "hsl(var(--card))",
-                      color: "hsl(var(--foreground))",
-                      borderRadius: "8px",
-                      fontSize: "0.9rem",
-                      padding: "0",
-                      maxWidth: "260px",
-                      zIndex: 9999,
-                      boxShadow: "0 6px 14px hsl(var(--border)/0.3)",
-                    }}
-                  />
+                  <Tooltip id={`vuln-${vuln.cve}`} />
                 </Marker>
               ))}
             </ZoomableGroup>
           </ComposableMap>
         </div>
-
-        {/* Severity Legend */}
-        <div className="mt-4 flex justify-center gap-4 flex-wrap">
-          {["critical", "high", "medium", "low"].map((sev) => (
+        <div className="mt-5 flex justify-center gap-6 flex-wrap">
+          {SEVERITIES.map((sev) => (
             <div key={sev} className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ background: `hsl(var(--cti-${sev}))` }}
-              />
+              <div className="w-3 h-3 rounded-full" style={{ background: getColor(sev) }} />
               <span className="text-xs text-muted-foreground capitalize">{sev}</span>
             </div>
           ))}
-        </div>
-
-        {/* Threat Locations List */}
-        <div className="mt-6 space-y-2">
-          <div className="flex justify-between items-center">
-            <h4 className="text-sm font-medium text-foreground">Active Threat Sources</h4>
-            <button
-              onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-              className="text-xs text-primary hover:text-primary-foreground transition-colors"
-            >
-              Sort {sortOrder === "desc" ? "↑ Asc" : "↓ Desc"}
-            </button>
-          </div>
-          <div className="grid gap-2 max-h-48 overflow-y-auto pr-2">
-            {sortedThreats.map((location, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + index * 0.07 }}
-                className="flex items-center justify-between p-3 rounded-lg border shadow-sm"
-                style={{
-                  background: `hsl(var(--cti-${location.severity})/0.1)`,
-                  borderColor: `hsl(var(--cti-${location.severity})/0.3)`,
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className="w-3 h-3 rounded-full mr-2"
-                    style={{
-                      background: `hsl(var(--cti-${location.severity}))`,
-                      boxShadow: `0 0 6px hsl(var(--cti-${location.severity})/0.5)`,
-                    }}
-                  />
-                  <span className="text-sm font-medium text-foreground">{location.country}</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-bold text-foreground">{location.threats}</div>
-                  <div className="text-xs text-muted-foreground capitalize">{location.severity}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </CardContent>
     </Card>
