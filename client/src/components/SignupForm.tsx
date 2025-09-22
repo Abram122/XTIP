@@ -4,6 +4,8 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import Loader from "@/components/ui/Loader"
 import { useToast } from "@/hooks/use-toast"
+import { Link, useNavigate } from "react-router-dom"
+import axios from "axios"
 
 function getPasswordStrength(password: string) {
     let score = 0
@@ -16,6 +18,7 @@ function getPasswordStrength(password: string) {
 
 export default function SignupForm() {
     const { toast } = useToast()
+    const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const [form, setForm] = useState({
         fullName: "",
@@ -38,24 +41,43 @@ export default function SignupForm() {
             setLoading(false)
             return
         }
-        await new Promise((r) => setTimeout(r, 2000))
-        setLoading(false)
-        toast({ title: "Account created", description: "Welcome aboard!" })
+        try {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/user/register`, {
+                fullName: form.fullName,
+                email: form.email,
+                password: form.password,
+            })
+            sessionStorage.setItem("pendingVerificationEmail", form.email)
+            toast({ title: "Account created", description: "Verification code sent to your email." })
+            navigate("/verify-email")
+        } catch (err: any) {
+            const message = err.response?.data?.message || "Something went wrong"
+
+            if (message.includes("User already registered but email not verified")) {
+                sessionStorage.setItem("pendingVerificationEmail", form.email)
+                toast({
+                    title: "Email Not Verified",
+                    description: "Please verify your email to continue.",
+                    variant: "destructive",
+                })
+                navigate("/verify-email")
+            } else {
+                toast({ title: "Signup Failed", description: message, variant: "destructive" })
+            }
+        } finally {
+            setLoading(false)
+        }
     }
 
     if (loading) return <Loader fullscreen />
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4">
-            <form
-                onSubmit={handleSubmit}
-                className="w-full max-w-lg space-y-8"
-            >
+            <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-8">
                 <div className="space-y-2 text-center">
                     <h2 className="text-3xl font-bold text-foreground">Sign Up</h2>
                     <p className="text-muted-foreground">Create your account to get started</p>
                 </div>
-
                 <div className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="fullName">Full Name</Label>
@@ -66,7 +88,6 @@ export default function SignupForm() {
                             required
                         />
                     </div>
-
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <Input
@@ -77,7 +98,6 @@ export default function SignupForm() {
                             required
                         />
                     </div>
-
                     <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
                         <Input
@@ -91,8 +111,7 @@ export default function SignupForm() {
                             {[1, 2, 3, 4].map((level) => (
                                 <div
                                     key={level}
-                                    className={`h-2 flex-1 rounded ${strength >= level ? "bg-primary" : "bg-muted"
-                                        }`}
+                                    className={`h-2 flex-1 rounded ${strength >= level ? "bg-primary" : "bg-muted"}`}
                                 />
                             ))}
                         </div>
@@ -100,7 +119,6 @@ export default function SignupForm() {
                             Password must be at least 8 characters, with uppercase, number, and symbol.
                         </p>
                     </div>
-
                     <div className="space-y-2">
                         <Label htmlFor="confirmPassword">Confirm Password</Label>
                         <Input
@@ -114,10 +132,15 @@ export default function SignupForm() {
                         />
                     </div>
                 </div>
-
                 <Button type="submit" className="w-full h-12 text-lg">
                     Create Account
                 </Button>
+                <div className="text-center text-sm text-muted-foreground">
+                    Do you have an account?{" "}
+                    <Link to="/login" className="text-primary font-medium hover:underline">
+                        Log in
+                    </Link>
+                </div>
             </form>
         </div>
     )
