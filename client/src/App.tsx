@@ -10,6 +10,8 @@ import Analytics from "./pages/Analytics";
 import Alerts from "./pages/Alerts";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
+import EmailVerification from "./pages/EmailVerification";
 
 const queryClient = new QueryClient();
 
@@ -20,31 +22,55 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={
-            <Layout>
-              <Overview />
-            </Layout>
-          } />
-          <Route path="/feeds" element={
-            <Layout>
-              <Feeds />
-            </Layout>
-          } />
-          <Route path="/analytics" element={
-            <Layout>
-              <Analytics />
-            </Layout>
-          } />
-          <Route path="/alerts" element={
-            <Layout>
-              <Alerts />
-            </Layout>
-          } />
-          <Route path="/settings" element={
-            <Layout>
-              <Settings />
-            </Layout>
-          } />
+          <Route
+            path="/"
+            element={
+              <Layout>
+                <Overview />
+              </Layout>
+            }
+          />
+          <Route
+            path="/feeds"
+            element={
+              <Layout>
+                <Feeds />
+              </Layout>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <Layout>
+                <Analytics />
+              </Layout>
+            }
+          />
+          <Route
+            path="/alerts"
+            element={
+              <Layout>
+                <Alerts />
+              </Layout>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <Layout>
+                <Settings />
+              </Layout>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <Layout>
+                <Profile />
+              </Layout>
+            }
+          />
+          <Route path="/verify-email" element={<EmailVerification />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
