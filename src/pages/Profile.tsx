@@ -51,7 +51,7 @@ export default function Profile() {
               <Label htmlFor="name">Full Name</Label>
               <Input
                 id="name"
-                defaultValue={user.user_metadata?.full_name ?? ""}
+                defaultValue={provider == 'google' ? user.user_metadata?.full_name ?? "" : user.user_metadata?.user_name ?? ""}
                 className="bg-card"
               />
             </div>

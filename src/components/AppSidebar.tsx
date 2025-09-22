@@ -8,6 +8,7 @@ import {
   Sun,
   Moon,
   User,
+  LogIn,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -25,6 +26,10 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "./ui/button";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
 
 const menuItems = [
   { title: "Overview", url: "/", icon: Home },
@@ -41,6 +46,11 @@ export function AppSidebar() {
   const { user } = useAuthUser();
 
   const [isDark, setIsDark] = useState(false);
+  const [open, setOpen] = useState(false);
+  const handleLogin = (provider: "google" | "github") => {
+    supabase.auth.signInWithOAuth({ provider })
+    setOpen(false)
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -166,7 +176,8 @@ export function AppSidebar() {
             )}
           </button>
 
-          {user && (
+           {/* Auth Actions */}
+          {user ? (
             <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 bg-destructive text-destructive-foreground hover:shadow-md hover:scale-[1.02]"
@@ -174,6 +185,43 @@ export function AppSidebar() {
               <LogOut className="w-4 h-4" />
               {!collapsed && "Logout"}
             </button>
+          ) : (
+            <>
+              <button
+                onClick={() => setOpen(true)}
+                className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 bg-primary text-primary-foreground hover:shadow-md hover:scale-[1.02]"
+              >
+                <LogIn className="w-4 h-4" />
+                {!collapsed && "Login"}
+              </button>
+
+              {/* 🔹 Modal for choosing provider */}
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Sign in</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex flex-col gap-3">
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                      onClick={() => handleLogin("google")}
+                    >
+                      <FcGoogle className="w-5 h-5" />
+                      Continue with Google
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                      onClick={() => handleLogin("github")}
+                    >
+                      <FaGithub className="w-5 h-5" />
+                      Continue with GitHub
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </>
           )}
         </div>
       </SidebarContent>
