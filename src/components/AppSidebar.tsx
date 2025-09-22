@@ -7,10 +7,11 @@ import {
   AlertTriangle,
   Sun,
   Moon,
+  User,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-
+import { LogOut } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +23,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { supabase } from "@/lib/supabaseClient";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
 const menuItems = [
   { title: "Overview", url: "/", icon: Home },
@@ -35,8 +38,14 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const collapsed = state === "collapsed";
+  const { user } = useAuthUser();
 
   const [isDark, setIsDark] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    window.location.href = "/" // redirect to homepage after logout
+  }
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -106,6 +115,19 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {user && (
+                <SidebarMenuItem key="Profile">
+                  <SidebarMenuButton asChild>
+                    <NavLink to="/profile" className={navLinkClasses}>
+                      <User className="w-5 h-5 flex-shrink-0 transition-transform duration-150 group-hover:scale-110" />
+                      {!collapsed && <span className="flex-1">Profile</span>}
+                      {isActive("/profile") && !collapsed && (
+                        <span className="absolute left-0 h-full w-1 bg-primary rounded-r-md" />
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -143,6 +165,16 @@ export function AppSidebar() {
               </>
             )}
           </button>
+
+          {user && (
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 bg-destructive text-destructive-foreground hover:shadow-md hover:scale-[1.02]"
+            >
+              <LogOut className="w-4 h-4" />
+              {!collapsed && "Logout"}
+            </button>
+          )}
         </div>
       </SidebarContent>
     </Sidebar>

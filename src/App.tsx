@@ -12,6 +12,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import EmailVerification from "./pages/EmailVerification";
+import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
 
@@ -66,7 +67,9 @@ const App = () => (
             path="/profile"
             element={
               <Layout>
-                <Profile />
+                <RequireAuth>
+                  <Profile />
+                </RequireAuth>
               </Layout>
             }
           />
