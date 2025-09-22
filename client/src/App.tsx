@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import EmailVerification from "./pages/EmailVerification";
 import RequireAuth from "./components/RequireAuth";
 
+
 const queryClient = new QueryClient();
 
 const App = () => (
