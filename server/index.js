@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
-import routes from "./routes/index.js"; // central route file you can git rid of this t3tz
+import routes from "./Routes/index.js"; // central route file you can git rid of this t3tz
 
 dotenv.config();
 
