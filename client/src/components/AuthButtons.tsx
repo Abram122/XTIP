@@ -15,7 +15,7 @@ export default function AuthButtons() {
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 justify-center">
         <Button onClick={() => signIn('google')}>
             <FcGoogle className="w-5 h-5" />
             <span className="font-medium">Sign in with Google</span>

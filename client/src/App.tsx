@@ -12,6 +12,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import EmailVerification from "./pages/EmailVerification";
+import LoginPage from "./pages/LoginPage";
 import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
@@ -23,57 +24,73 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/verify-email" element={<EmailVerification />} />
+
+          {/* Protected routes */}
           <Route
             path="/"
             element={
-              <Layout>
-                <Overview />
-              </Layout>
+              <RequireAuth>
+                <Layout>
+                  <Overview />
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/feeds"
             element={
-              <Layout>
-                <Feeds />
-              </Layout>
+              <RequireAuth>
+                <Layout>
+                  <Feeds />
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/analytics"
             element={
-              <Layout>
-                <Analytics />
-              </Layout>
+              <RequireAuth>
+                <Layout>
+                  <Analytics />
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/alerts"
             element={
-              <Layout>
-                <Alerts />
-              </Layout>
+              <RequireAuth>
+                <Layout>
+                  <Alerts />
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/settings"
             element={
-              <Layout>
-                <Settings />
-              </Layout>
+              <RequireAuth>
+                <Layout>
+                  <Settings />
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/profile"
             element={
-              <Layout>
-                <RequireAuth>
+              <RequireAuth>
+                <Layout>
                   <Profile />
-                </RequireAuth>
-              </Layout>
+                </Layout>
+              </RequireAuth>
             }
           />
-          <Route path="/verify-email" element={<EmailVerification />} />
+
+          {/* Fallback */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
