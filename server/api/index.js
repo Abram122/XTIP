@@ -18,7 +18,7 @@ app.use(morgan("dev"));
 app.use("/api", routes);
 
 // Database connection
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 
 mongoose
