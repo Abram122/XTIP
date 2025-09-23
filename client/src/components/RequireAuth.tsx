@@ -1,10 +1,11 @@
 import { useAuth } from "../context/AuthContext";
 import AuthButtons from "./AuthButtons";
+import Loader from "./ui/Loader";
 
 export default function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loader />;
 
   if (!user) {
     return (

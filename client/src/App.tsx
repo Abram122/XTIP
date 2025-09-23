@@ -13,6 +13,8 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import EmailVerification from "./pages/EmailVerification";
 import RequireAuth from "./components/RequireAuth";
+import  SignupForm  from "./components/SignupForm";
+import  LoginForm  from "./components/LoginForm";
 
 
 const queryClient = new QueryClient();
@@ -75,6 +77,8 @@ const App = () => (
             }
           />
           <Route path="/verify-email" element={<EmailVerification />} />
+          <Route path="/signup" element={<SignupForm />} />
+          <Route path="/login" element={<LoginForm />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
