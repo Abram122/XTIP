@@ -86,4 +86,35 @@ export const loginUser = async (req, res) => {
         res.status(500).json({ message: err.message })
     }
 }
+export const saveAuthUser = async (req, res) => {
+  try {
+    const { email, name } = req.body;
 
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    // Find existing user
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // Update existing user
+      user.fullName = name || user.fullName;
+      user.updatedAt = new Date();
+      await user.save();
+    } else {
+      // Create new user
+      user = new User({
+        fullName: name || "Unknown",
+        email,
+        password: "supabase-auth", 
+      });
+      await user.save();
+    }
+
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    console.error("Error saving auth user:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
