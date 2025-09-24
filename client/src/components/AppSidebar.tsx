@@ -37,6 +37,7 @@ const menuItems = [
   { title: "Feeds", url: "/feeds", icon: Database },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Alerts", url: "/alerts", icon: AlertTriangle },
+  { title: "Incidents", url: "/incidents", icon: AlertTriangle },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 

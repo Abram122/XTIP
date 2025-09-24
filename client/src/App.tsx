@@ -15,6 +15,7 @@ import EmailVerification from "./pages/EmailVerification";
 import RequireAuth from "./components/RequireAuth";
 import  SignupForm  from "./components/SignupForm";
 import  LoginForm  from "./components/LoginForm";
+import Incidents from "./pages/Incidents";
 
 
 const queryClient = new QueryClient();
@@ -55,6 +56,14 @@ const App = () => (
             element={
               <Layout>
                 <Alerts />
+              </Layout>
+            }
+          />
+          <Route
+            path="/incidents"
+            element={
+              <Layout>
+                <Incidents />
               </Layout>
             }
           />
