@@ -63,6 +63,15 @@ export default function AuthButtons() {
           Sign up
         </Link>
       </p>
+      <p className="text-center text-xs text-muted-foreground mt-2">
+        Return to home page{" "}
+        <Link
+          to="/"
+          className="text-primary font-medium hover:underline"
+        >
+          Home
+        </Link>
+      </p>
     </div>
   )
 }
