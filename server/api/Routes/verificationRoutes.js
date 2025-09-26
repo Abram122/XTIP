@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sendCode, verifyCode, resendCode } from "../Controllers/verificationController.js";
+import { sendCode, verifyCode, resendCode } from "../controllers/verificationController.js";
 
 const router = Router();
 
