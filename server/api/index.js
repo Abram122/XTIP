@@ -1,4 +1,4 @@
-import express, { Router, json } from "express";
+import express, { json } from "express";
 import dotenv from "dotenv";
 import { connect } from "mongoose";
 import cors from "cors";
@@ -16,7 +16,7 @@ app.use(morgan("dev"));
 
 
 app.use("/api", indexRoutes);
-
+app.use(cors([]));
 
 // Database connection
 const PORT = process.env.PORT || 3000;
