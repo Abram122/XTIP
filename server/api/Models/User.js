@@ -1,36 +1,40 @@
-import mongoose from "mongoose";
-
 const userSchema = new mongoose.Schema({
-    fullName: {
-        type: String,
-        required: [true, "Full name is required"],
-        minlength: [3, "Name must be at least 3 characters long"],
-        match: [/^[a-zA-Z\s]+$/, "Name must contain only letters and spaces"],
-    },
-    email: {
-        type: String,
-        required: [true, "Email is required"],
-        unique: true,
-        lowercase: true,
-        match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email format"],
-    },
-    password: {
-        type: String,
-        required: [true, "Password is required"],
-        minlength: [8, "Password must be at least 8 characters long"],
-        // match: [
-        //     /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
-        //     "Password must contain at least one uppercase letter, one number, and one special characters",
-        // ],
-    },
-    verification: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Verification",
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
+  fullName: {
+    type: String,
+    required: [true, "Full name is required"],
+    minlength: [3, "Name must be at least 3 characters long"],
+    match: [/^[a-zA-Z\s]+$/, "Name must contain only letters and spaces"],
+  },
+  email: {
+    type: String,
+    required: [true, "Email is required"],
+    unique: true,
+    lowercase: true,
+    match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email format"],
+  },
+  password: {
+    type: String,
+    minlength: [8, "Password must be at least 8 characters long"],
+  },
+  authProvider: {
+    type: String,
+    enum: ["local", "google", "github"], // extend as needed
+    default: "local",
+  },
+  verification: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Verification",
+  },
+  bio: {
+    type: Text,
+    match: [/^[a-zA-Z0-9\s]+$/, "Name must contain only letters and spaces"],
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  sector: {
+    type: String,
+    match: [/^[a-zA-Z\s]+$/, "Name must contain only letters and spaces"],
+  },
 });
-
-export default mongoose.model("User", userSchema);

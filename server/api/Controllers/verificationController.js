@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs"
-import User from "../models/User.js"
-import Verification from "../models/Verification.js"
+import User from "../Models/User.js"
+import Verification from "../Models/Verification.js"
 import { generateToken } from "../utils/jwt.js"
 import { sendEmail } from "../utils/sendEmail.js"
 

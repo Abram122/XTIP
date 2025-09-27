@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { supabase } from "../lib/supabaseClient";
+import { Provider } from "@radix-ui/react-toast";
 
 export function useAuthUser() {
   const [user, setUser] = useState(null);
@@ -42,6 +43,7 @@ export function useAuthUser() {
       await axios.post(`${import.meta.env.VITE_API_URL}/user/save`, {
         email: user.email,
         name: user.user_metadata?.full_name ?? null,
+        provider: user.app_metadata?.provider ?? "local",
       });
     } catch (err) {
       console.error(

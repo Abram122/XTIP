@@ -3,14 +3,14 @@ import {
   registerUser,
   loginUser,
   saveAuthUser,
-} from "../controllers/userController.js";
-import { protect } from "../middleware/authMiddleware.js";
+  getProfile,
+  updateProfile,
+} from "../Controllers/userController.js";
 
 const router = express.Router();
 
-router.get("/me", protect, (req, res) => {
-    res.json({ message: "User data", userId: req.user.id });
-});
+router.get("/me", getProfile);
+router.patch("/me", updateProfile);
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/save", saveAuthUser);
