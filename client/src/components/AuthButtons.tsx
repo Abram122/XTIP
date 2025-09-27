@@ -44,17 +44,6 @@ export default function AuthButtons() {
           <FaGithub className="w-6 h-6 text-gray-800 dark:text-gray-200" />
           <span>Continue with GitHub</span>
         </Button>
-
-        {/* Email */}
-        <Link to="/login" className="w-full">
-          <Button
-            variant="outline"
-            className="flex items-center justify-center gap-3 w-full py-5 rounded-xl text-base font-medium transition-colors hover:bg-accent/50 dark:hover:bg-accent/30"
-          >
-            <FaEnvelope className="w-6 h-6 text-blue-500" />
-            <span>Continue with Email</span>
-          </Button>
-        </Link>
       </div>
 
       {/* Links */}

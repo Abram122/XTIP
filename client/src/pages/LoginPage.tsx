@@ -7,6 +7,7 @@ import {
 import { Shield, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AuthButtons from "@/components/AuthButtons";
+import { Link } from "react-router-dom";
 
 export default function LoginPage() {
   return (
@@ -40,13 +41,15 @@ export default function LoginPage() {
           </div>
 
           {/* Email Button */}
-          <Button
-            variant="outline"
-            className="w-full flex items-center gap-2 border-border text-foreground hover:bg-muted/20"
-          >
-            <Mail className="w-4 h-4" />
-            Sign in with Email
-          </Button>
+          <Link to="/login-form">
+            <Button
+              variant="outline"
+              className="w-full flex items-center gap-2 border-border text-foreground hover:bg-muted/20"
+            >
+              <Mail className="w-4 h-4" />
+              Sign in with Email
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </div>

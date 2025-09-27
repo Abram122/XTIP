@@ -226,7 +226,7 @@ export function AppSidebar() {
                     </Button>
 
                     <Button variant="outline" asChild>
-                      <Link to="/login" className="flex items-center gap-2 w-full justify-center">
+                      <Link to="/login-form" className="flex items-center gap-2 w-full justify-center">
                         <FaEnvelope className="w-5 h-5 text-blue-500" />
                         Continue with Email
                       </Link>

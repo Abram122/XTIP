@@ -24,12 +24,13 @@ export default function LoginForm() {
         }
 
         try {
-            const res = await axios.post(`${import.meta.env.VITE_API_URL}/user/login`, {
-                email: form.email,
-                password: form.password,
-            })
+            const res = await axios.post(
+                `${import.meta.env.VITE_API_URL}/user/login`,
+                { email: form.email, password: form.password },
+                { withCredentials: true }
+            )
 
-            const { token, user, message } = res.data
+            const { user, message } = res.data
 
             if (message?.includes("not verified")) {
                 sessionStorage.setItem("pendingVerificationEmail", form.email)
@@ -42,9 +43,7 @@ export default function LoginForm() {
                 return
             }
 
-            if (token) {
-                sessionStorage.setItem("authToken", token)
-                sessionStorage.setItem("user", JSON.stringify(user))
+            if (user) {
                 toast({ title: "Login Successful", description: "Welcome back!" })
                 navigate("/")
             }
@@ -68,7 +67,6 @@ export default function LoginForm() {
                     <h2 className="text-3xl font-bold text-foreground">Login</h2>
                     <p className="text-muted-foreground">Access your account</p>
                 </div>
-
                 <div className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
@@ -81,7 +79,6 @@ export default function LoginForm() {
                             className="w-full"
                         />
                     </div>
-
                     <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
                         <Input
@@ -94,7 +91,6 @@ export default function LoginForm() {
                         />
                     </div>
                 </div>
-
                 <Button type="submit" className="w-full h-12 text-lg">
                     Login
                 </Button>
@@ -104,9 +100,7 @@ export default function LoginForm() {
                         Sign up
                     </Link>
                 </div>
-                    
             </form>
-
         </div>
     )
 }

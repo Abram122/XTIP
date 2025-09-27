@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
+import { getMe } from "@/services/api"
 
 export function useUnifiedUser() {
     const [user, setUser] = useState<any>(null)
@@ -9,7 +10,6 @@ export function useUnifiedUser() {
         async function loadUser() {
             setLoading(true)
 
-            // 1. Check Supabase session
             const { data } = await supabase.auth.getUser()
             if (data?.user) {
                 setUser(data.user)
@@ -17,17 +17,15 @@ export function useUnifiedUser() {
                 return
             }
 
-            // 2. Check JWT stored locally (email login)
-            const token = sessionStorage.getItem("authToken")
-            const localUser = sessionStorage.getItem("user")
-
-            if (token && localUser) {
-                try {
-                    setUser(JSON.parse(localUser))
-                } catch {
+            try {
+                const data = await getMe()
+                if (data?.userId) {
+                    setUser(data)
+                } else {
                     setUser(null)
                 }
-            } else {
+            } catch {
+                console.error("Failed to fetch user")
                 setUser(null)
             }
 
