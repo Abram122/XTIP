@@ -14,6 +14,12 @@ export async function getIncidents() {
     return res.data
 }
 
+// Get news incidents
+export async function getNews() {
+    const res = await axios.get(`${API_BASE}/news`, { withCredentials: true })
+    return res.data
+}
+
 // Create new incident
 export async function createIncident(payload: {
     title: string

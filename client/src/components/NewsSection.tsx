@@ -7,6 +7,7 @@ import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { getNews } from "@/services/api"
 
 interface NewsItem {
   title: string
@@ -29,8 +30,8 @@ export function NewsSection() {
     setLoading(true)
     setError(null)
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/news`)
-      setNews(res.data)
+      const res = await getNews();
+      setNews(res)
     } catch {
       setError("Failed to fetch news")
     } finally {

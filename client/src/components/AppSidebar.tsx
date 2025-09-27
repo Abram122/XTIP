@@ -10,10 +10,10 @@ import {
   User,
   LogIn,
   LogOut,
-} from "lucide-react";
+} from "lucide-react"
 import { FaEnvelope } from "react-icons/fa"
-import { Link, NavLink, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom"
+import { useEffect, useState } from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -24,13 +24,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { supabase } from "@/lib/supabaseClient";
-import { useAuthUser } from "@/hooks/useAuthUser";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "./ui/button";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
+} from "@/components/ui/sidebar"
+import { supabase } from "@/lib/supabaseClient"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "./ui/button"
+import { FcGoogle } from "react-icons/fc"
+import { FaGithub } from "react-icons/fa"
+import { useUnifiedUser } from "@/hooks/useUnifiedUser"
 
 const menuItems = [
   { title: "Overview", url: "/overview", icon: Home },
@@ -39,76 +39,67 @@ const menuItems = [
   { title: "Alerts", url: "/alerts", icon: AlertTriangle },
   { title: "Incidents", url: "/incidents", icon: AlertTriangle },
   { title: "Settings", url: "/settings", icon: Settings },
-];
+]
 
 export function AppSidebar() {
-  const { state } = useSidebar();
-  const location = useLocation();
-  const collapsed = state === "collapsed";
-  const { user: supabaseUser } = useAuthUser();
+  const { state } = useSidebar()
+  const location = useLocation()
+  const collapsed = state === "collapsed"
+  const { user } = useUnifiedUser()
 
-  const [isDark, setIsDark] = useState(false);
-  const [open, setOpen] = useState(false);
-
-  // 🔹 Get user from sessionStorage (Email login)
-  const emailUser = sessionStorage.getItem("user")
-    ? JSON.parse(sessionStorage.getItem("user")!)
-    : null;
-
-  // 🔹 Unified user object
-  const user = supabaseUser || emailUser;
+  const [isDark, setIsDark] = useState(false)
+  const [open, setOpen] = useState(false)
 
   const handleLogin = (provider: "google" | "github") => {
     supabase.auth.signInWithOAuth({ provider })
     setOpen(false)
-  };
+  }
 
   const handleLogout = async () => {
-    // logout from supabase
-    await supabase.auth.signOut();
-
-    // clear email login session
-    sessionStorage.removeItem("authToken");
-    sessionStorage.removeItem("user");
-
-    window.location.href = "/";
-  };
+    await supabase.auth.signOut()
+    await fetch(`${import.meta.env.VITE_API_URL}/user/logout`, {
+      method: "POST",
+      credentials: "include",
+    })
+    window.location.href = "/login"
+  }
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
+    const savedTheme = localStorage.getItem("theme")
     if (savedTheme === "dark") {
-      setIsDark(true);
-      document.documentElement.classList.add("dark");
+      setIsDark(true)
+      document.documentElement.classList.add("dark")
     } else {
-      setIsDark(false);
-      document.documentElement.classList.remove("dark");
+      setIsDark(false)
+      document.documentElement.classList.remove("dark")
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    const root = document.documentElement;
+    const root = document.documentElement
     if (isDark) {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
+      root.classList.add("dark")
+      localStorage.setItem("theme", "dark")
     } else {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
+      root.classList.remove("dark")
+      localStorage.setItem("theme", "light")
     }
-  }, [isDark]);
+  }, [isDark])
 
-  const toggleTheme = () => setIsDark((prev) => !prev);
+  const toggleTheme = () => setIsDark((prev) => !prev)
 
   const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
-  };
+    if (path === "/") return location.pathname === "/"
+    return location.pathname.startsWith(path)
+  }
 
   const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
     `group relative flex items-center gap-4 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200
-    ${isActive
-      ? "bg-primary/20 text-foreground shadow-md"
-      : "text-foreground/70 hover:bg-accent hover:text-foreground"
-    }`;
+    ${
+      isActive
+        ? "bg-primary/20 text-foreground shadow-md"
+        : "text-foreground/70 hover:bg-accent hover:text-foreground"
+    }`
 
   return (
     <Sidebar className="h-full min-h-screen w-full max-w-[260px] border-r border-border bg-background shadow-lg backdrop-blur-sm overflow-hidden transition-colors duration-300">
@@ -239,5 +230,5 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
     </Sidebar>
-  );
+  )
 }
