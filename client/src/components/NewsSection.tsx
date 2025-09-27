@@ -1,80 +1,67 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Newspaper, ExternalLink, Clock } from "lucide-react";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Newspaper, ExternalLink, Clock, RefreshCw } from "lucide-react"
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import axios from "axios"
+import { Button } from "@/components/ui/button"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface NewsItem {
-  title: string;
-  link: string;
-  pubDate: string;
-  description?: string;
+  title: string
+  link: string
+  pubDate: string
+  description?: string
+  type: string
+  category: string
 }
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.08, type: "spring", stiffness: 120 }
-  })
-};
-
 export function NewsSection() {
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [news, setNews] = useState<NewsItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [sourceFilter, setSourceFilter] = useState<string>("All Sources")
+  const [categoryFilter, setCategoryFilter] = useState<string>("All Categories")
+
+  const fetchNews = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/news`)
+      setNews(res.data)
+    } catch {
+      setError("Failed to fetch news")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const mockNews: NewsItem[] = [
-      {
-        title: "Critical Zero-Day Vulnerability Discovered in Popular Web Framework",
-        link: "#",
-        pubDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        description: "Security researchers have identified a critical zero-day vulnerability affecting millions of web applications."
-      },
-      {
-        title: "New Ransomware Campaign Targets Healthcare Organizations",
-        link: "#",
-        pubDate: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-        description: "A sophisticated ransomware group has been observed targeting healthcare infrastructure with advanced encryption techniques."
-      },
-      {
-        title: "Nation-State APT Group Deploys Novel Malware in Supply Chain Attack",
-        link: "#",
-        pubDate: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-        description: "Intelligence agencies report a new advanced persistent threat targeting software supply chains."
-      },
-      {
-        title: "Major Cloud Provider Patches Critical Security Flaw",
-        link: "#",
-        pubDate: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-        description: "Emergency security update addresses privilege escalation vulnerability in cloud infrastructure."
-      },
-      {
-        title: "Cybersecurity Framework Update Enhances Threat Detection",
-        link: "#",
-        pubDate: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
-        description: "New framework version includes enhanced machine learning capabilities for automated threat detection."
-      }
-    ];
+    fetchNews()
+  }, [])
 
-    setTimeout(() => {
-      setNews(mockNews);
-      setLoading(false);
-    }, 1000);
-  }, []);
+  const filteredNews = news.filter((item) => {
+    const matchesSource =
+      sourceFilter === "All Sources" || item.type === sourceFilter
+    const matchesCategory =
+      categoryFilter === "All Categories" || item.category === categoryFilter
+    return matchesSource && matchesCategory
+  })
 
   const getTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays}d ago`;
-  };
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    if (diffInHours < 1) return "Just now"
+    if (diffInHours < 24) return `${diffInHours}h ago`
+    const diffInDays = Math.floor(diffInHours / 24)
+    return `${diffInDays}d ago`
+  }
+
+  const uniqueSources = ["All Sources", ...Array.from(new Set(news.map((n) => n.type)))]
+  const uniqueCategories = ["All Categories", ...Array.from(new Set(news.map((n) => n.category)))]
 
   return (
     <motion.div
@@ -97,11 +84,63 @@ export function NewsSection() {
                 Cybersecurity News
               </CardTitle>
             </div>
-            <Badge variant="secondary" className="text-xs px-3 py-1 animate-pulse">
-              Live Feed
-            </Badge>
+
+            {/* Refresh button */}
+            <Button size="sm" variant="outline" onClick={fetchNews} disabled={loading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
           </div>
+
+          {/* Accordion Filters */}
+          <Accordion type="single" collapsible className="mt-4 w-full">
+            <AccordionItem value="filters">
+              <AccordionTrigger>Filters</AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
+                  {/* Source filter */}
+                  <div className="flex-1">
+                    <label className="text-sm text-muted-foreground mb-1 block">
+                      Source
+                    </label>
+                    <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {uniqueSources.map((src) => (
+                          <SelectItem key={src} value={src}>
+                            {src}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Category filter */}
+                  <div className="flex-1">
+                    <label className="text-sm text-muted-foreground mb-1 block">
+                      Category
+                    </label>
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {uniqueCategories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardHeader>
+
         <CardContent>
           {loading ? (
             <div className="space-y-4">
@@ -119,19 +158,19 @@ export function NewsSection() {
               <p className="text-xs mt-1">Please check your connection</p>
             </div>
           ) : (
-            <div className="space-y-4 max-h-80 overflow-y-auto">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
               <AnimatePresence>
-                {news.map((item, index) => (
+                {filteredNews.map((item, index) => (
                   <motion.a
                     key={index}
                     href={item.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
-                    custom={index}
-                    whileHover={{ scale: 1.03, boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 30 }}
+                    transition={{ delay: index * 0.05, type: "spring", stiffness: 120 }}
+                    whileHover={{ scale: 1.02 }}
                     className="block p-4 rounded-xl border border-border/50 bg-background/80 hover:bg-card transition-all cursor-pointer group shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -147,6 +186,9 @@ export function NewsSection() {
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />
                           <span>{getTimeAgo(item.pubDate)}</span>
+                          <Badge variant="outline" className="ml-2">
+                            {item.category}
+                          </Badge>
                         </div>
                       </div>
                       <motion.div
@@ -161,19 +203,8 @@ export function NewsSection() {
               </AnimatePresence>
             </div>
           )}
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-4 pt-4 border-t border-border/50"
-          >
-            <p className="text-xs text-muted-foreground text-center">
-              News sourced from cybersecurity feeds • Updated every 15 minutes
-            </p>
-          </motion.div>
         </CardContent>
       </Card>
     </motion.div>
-  );
+  )
 }
