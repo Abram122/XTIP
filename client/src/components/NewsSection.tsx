@@ -29,7 +29,8 @@ export function NewsSection() {
     setLoading(true)
     setError(null)
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/news`)
+
+      const res = await axios.get(`${process.env.VITE_API_URL}/news`)
       setNews(res.data)
     } catch {
       setError("Failed to fetch news")

@@ -3,7 +3,10 @@ import express from "express";
 
 const router = express.Router();
 
-// GET /api/feeds/:ip
-router.get('/:ip', feedController.getVirusTotalIPScan);
+
+router.get('/vt/ip/:ip', feedController.getVirusTotalIPScan);
+router.get("/vt/domain/:domain", feedController.getVirusTotalDomainScan);
+router.get("/vt/file/:file_hash", feedController.getVirusTotalFileHashScan);
+
 
 export default router;

@@ -3,11 +3,11 @@ import dotenv from "dotenv";
 import { connect } from "mongoose";
 import cors from "cors";
 import morgan from "morgan";
+import indexRoutes from "./Routes/index.js";
 dotenv.config();
 
 const app = express();
 
-import indexRoutes from "./routes/index.js";
 
 // Middleware
 app.use(json());
