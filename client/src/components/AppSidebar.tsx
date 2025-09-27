@@ -33,10 +33,11 @@ import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 
 const menuItems = [
-  { title: "Overview", url: "/", icon: Home },
+  { title: "Overview", url: "/overview", icon: Home },
   { title: "Feeds", url: "/feeds", icon: Database },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Alerts", url: "/alerts", icon: AlertTriangle },
+  { title: "Incidents", url: "/incidents", icon: AlertTriangle },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 

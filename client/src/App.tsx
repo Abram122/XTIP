@@ -13,9 +13,10 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import EmailVerification from "./pages/EmailVerification";
 import RequireAuth from "./components/RequireAuth";
-import  SignupForm  from "./components/SignupForm";
-import  LoginForm  from "./components/LoginForm";
-
+import SignupForm from "./components/SignupForm";
+import LoginForm from "./components/LoginForm";
+import Incidents from "./pages/Incidents";
+import MarketingPage from "./pages/MarketingPage"; 
 
 const queryClient = new QueryClient();
 
@@ -26,11 +27,17 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Landing page */}
+          <Route path="/" element={<MarketingPage />} />
+
+          {/* Protected Pages */}
           <Route
-            path="/"
+            path="/overview"
             element={
               <Layout>
-                <Overview />
+                <RequireAuth>
+                  <Overview />
+                </RequireAuth>
               </Layout>
             }
           />
@@ -38,7 +45,9 @@ const App = () => (
             path="/feeds"
             element={
               <Layout>
-                <Feeds />
+                <RequireAuth>
+                  <Feeds />
+                </RequireAuth>
               </Layout>
             }
           />
@@ -46,7 +55,9 @@ const App = () => (
             path="/analytics"
             element={
               <Layout>
-                <Analytics />
+                <RequireAuth>
+                  <Analytics />
+                </RequireAuth>
               </Layout>
             }
           />
@@ -54,7 +65,19 @@ const App = () => (
             path="/alerts"
             element={
               <Layout>
-                <Alerts />
+                <RequireAuth>
+                  <Alerts />
+                </RequireAuth>
+              </Layout>
+            }
+          />
+          <Route
+            path="/incidents"
+            element={
+              <Layout>
+                <RequireAuth>
+                  <Incidents />
+                </RequireAuth>
               </Layout>
             }
           />
@@ -62,7 +85,9 @@ const App = () => (
             path="/settings"
             element={
               <Layout>
-                <Settings />
+                <RequireAuth>
+                  <Settings />
+                </RequireAuth>
               </Layout>
             }
           />
@@ -76,9 +101,13 @@ const App = () => (
               </Layout>
             }
           />
+
+          {/* Auth Routes */}
           <Route path="/verify-email" element={<EmailVerification />} />
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/login" element={<LoginForm />} />
+
+          {/* Not Found */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
