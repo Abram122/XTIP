@@ -1,8 +1,8 @@
-import { supabase } from "../lib/supabaseClient"
-import { Button } from "@/components/ui/button"
-import { FcGoogle } from "react-icons/fc"
-import { FaGithub, FaEnvelope } from "react-icons/fa"
-import { Link } from "react-router-dom"
+import { supabase } from "../lib/supabaseClient";
+import { Button } from "@/components/ui/button";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub, FaEnvelope } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export default function AuthButtons() {
   async function signIn(provider: "google" | "github") {
@@ -11,8 +11,8 @@ export default function AuthButtons() {
       options: {
         redirectTo: window.location.origin,
       },
-    })
-    if (error) console.error(error)
+    });
+    if (error) console.error(error);
   }
 
   return (
@@ -25,15 +25,17 @@ export default function AuthButtons() {
       </p>
 
       <div className="flex flex-col gap-3">
+        {/* Google */}
         <Button
           onClick={() => signIn("google")}
           variant="outline"
           className="flex items-center justify-center gap-3 w-full py-5 rounded-xl text-base font-medium transition-colors hover:bg-accent/50 dark:hover:bg-accent/30"
         >
-          <FcGoogle className="w-6 h-6" />
+          <FcGoogle className="w-5 h-5" />
           <span>Continue with Google</span>
         </Button>
 
+        {/* GitHub */}
         <Button
           onClick={() => signIn("github")}
           variant="outline"
@@ -43,6 +45,7 @@ export default function AuthButtons() {
           <span>Continue with GitHub</span>
         </Button>
 
+        {/* Email */}
         <Link to="/login" className="w-full">
           <Button
             variant="outline"
@@ -54,6 +57,7 @@ export default function AuthButtons() {
         </Link>
       </div>
 
+      {/* Links */}
       <p className="text-center text-xs text-muted-foreground mt-2">
         Don’t have an account?{" "}
         <Link
@@ -73,5 +77,5 @@ export default function AuthButtons() {
         </Link>
       </p>
     </div>
-  )
+  );
 }

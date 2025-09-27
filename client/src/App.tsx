@@ -12,11 +12,12 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import EmailVerification from "./pages/EmailVerification";
+import LoginPage from "./pages/LoginPage";
 import RequireAuth from "./components/RequireAuth";
 import SignupForm from "./components/SignupForm";
 import LoginForm from "./components/LoginForm";
 import Incidents from "./pages/Incidents";
-import MarketingPage from "./pages/MarketingPage"; 
+import MarketingPage from "./pages/MarketingPage";
 
 const queryClient = new QueryClient();
 
@@ -30,82 +31,83 @@ const App = () => (
           {/* Landing page */}
           <Route path="/" element={<MarketingPage />} />
 
-          {/* Protected Pages */}
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login-form" element={<LoginForm />} />
+          <Route path="/signup" element={<SignupForm />} />
+          <Route path="/verify-email" element={<EmailVerification />} />
+
+          {/* Protected routes */}
           <Route
             path="/overview"
             element={
-              <Layout>
-                <RequireAuth>
+              <RequireAuth>
+                <Layout>
                   <Overview />
-                </RequireAuth>
-              </Layout>
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/feeds"
             element={
-              <Layout>
-                <RequireAuth>
+              <RequireAuth>
+                <Layout>
                   <Feeds />
-                </RequireAuth>
-              </Layout>
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/analytics"
             element={
-              <Layout>
-                <RequireAuth>
+              <RequireAuth>
+                <Layout>
                   <Analytics />
-                </RequireAuth>
-              </Layout>
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/alerts"
             element={
-              <Layout>
-                <RequireAuth>
+              <RequireAuth>
+                <Layout>
                   <Alerts />
-                </RequireAuth>
-              </Layout>
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/incidents"
             element={
-              <Layout>
-                <RequireAuth>
+              <RequireAuth>
+                <Layout>
                   <Incidents />
-                </RequireAuth>
-              </Layout>
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/settings"
             element={
-              <Layout>
-                <RequireAuth>
+              <RequireAuth>
+                <Layout>
                   <Settings />
-                </RequireAuth>
-              </Layout>
+                </Layout>
+              </RequireAuth>
             }
           />
           <Route
             path="/profile"
             element={
-              <Layout>
-                <RequireAuth>
+              <RequireAuth>
+                <Layout>
                   <Profile />
-                </RequireAuth>
-              </Layout>
+                </Layout>
+              </RequireAuth>
             }
           />
-
-          {/* Auth Routes */}
-          <Route path="/verify-email" element={<EmailVerification />} />
-          <Route path="/signup" element={<SignupForm />} />
-          <Route path="/login" element={<LoginForm />} />
 
           {/* Not Found */}
           <Route path="*" element={<NotFound />} />
