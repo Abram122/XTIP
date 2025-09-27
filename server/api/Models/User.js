@@ -16,21 +16,31 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, "Password is required"],
         minlength: [8, "Password must be at least 8 characters long"],
-        // match: [
-        //     /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
-        //     "Password must contain at least one uppercase letter, one number, and one special characters",
-        // ],
+    },
+    authProvider: {
+        type: String,
+        enum: ["local", "google", "github"],
+        default: "local",
     },
     verification: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Verification",
     },
+    bio: {
+        type: String,
+        match: [/^[a-zA-Z0-9\s]+$/, "Name must contain only letters and spaces"],
+    },
+    sector: {
+        type: String,
+        match: [/^[a-zA-Z\s]+$/, "Name must contain only letters and spaces"],
+    },
     createdAt: {
         type: Date,
         default: Date.now,
-    },
+    }
 });
 
-export default mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
+
+export default User;
