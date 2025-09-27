@@ -5,11 +5,21 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Mail, Timer } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { useNavigate } from "react-router-dom"
+import axios from "axios"
 
 export default function EmailVerification() {
     const [code, setCode] = useState("")
     const [resendTimer, setResendTimer] = useState(0)
     const { toast } = useToast()
+    const navigate = useNavigate()
+    const email = sessionStorage.getItem("pendingVerificationEmail")
+
+    useEffect(() => {
+        if (!email) {
+            navigate(-1)
+        }
+    }, [email, navigate])
 
     useEffect(() => {
         if (code.length === 6) {
@@ -17,7 +27,6 @@ export default function EmailVerification() {
         }
     }, [code])
 
-    // that's for resend button t3tz 
     useEffect(() => {
         let timer: NodeJS.Timeout
         if (resendTimer > 0) {
@@ -26,28 +35,42 @@ export default function EmailVerification() {
         return () => clearTimeout(timer)
     }, [resendTimer])
 
-    // add your verification logic here t3tz
-    const handleVerify = () => {
-        if (code === "123456") {
+    const handleVerify = async () => {
+        try {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/verification/verify`, {
+                email,
+                code,
+            })
             toast({
                 title: "Email Verified",
-                description: "Your email has been verified successfully.",
+                description: res.data.message || "Your email has been verified successfully.",
             })
-        } else {
+            sessionStorage.removeItem("pendingVerificationEmail")
+            navigate("/login")
+        } catch (err: any) {
             toast({
                 title: "Invalid Code",
-                description: "The code you entered is incorrect. Please try again.",
+                description: err.response?.data?.message || "The code is incorrect. Please try again.",
                 variant: "destructive",
             })
         }
     }
 
-    const handleResend = () => {
-        setResendTimer(30)
-        toast({
-            title: "📩 Code Resent",
-            description: "We’ve sent a new verification code to your email.",
-        })
+    const handleResend = async () => {
+        try {
+            await axios.post(`${import.meta.env.VITE_API_URL}/verification/resend`, { email })
+            setResendTimer(30)
+            toast({
+                title: "📩 Code Resent",
+                description: "We’ve sent a new verification code to your email.",
+            })
+        } catch (err: any) {
+            toast({
+                title: "Failed",
+                description: err.response?.data?.message || "Could not resend code",
+                variant: "destructive",
+            })
+        }
     }
 
     return (
@@ -63,7 +86,7 @@ export default function EmailVerification() {
                     <Alert className="bg-muted/40 border-border text-center">
                         <AlertTitle>Check your inbox</AlertTitle>
                         <AlertDescription>
-                            We’ve sent a 6-digit verification code to <b>john@example.com</b>.
+                            We’ve sent a 6-digit verification code to <b>{email}</b>.
                         </AlertDescription>
                     </Alert>
 

@@ -14,7 +14,10 @@ import Profile from "./pages/Profile";
 import EmailVerification from "./pages/EmailVerification";
 import LoginPage from "./pages/LoginPage";
 import RequireAuth from "./components/RequireAuth";
-
+import SignupForm from "./components/SignupForm";
+import LoginForm from "./components/LoginForm";
+import Incidents from "./pages/Incidents";
+import MarketingPage from "./pages/MarketingPage";
 
 const queryClient = new QueryClient();
 
@@ -25,13 +28,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Landing page */}
+          <Route path="/" element={<MarketingPage />} />
+
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/login-form" element={<LoginForm />} />
+          <Route path="/signup" element={<SignupForm />} />
           <Route path="/verify-email" element={<EmailVerification />} />
 
           {/* Protected routes */}
           <Route
-            path="/"
+            path="/overview"
             element={
               <RequireAuth>
                 <Layout>
@@ -71,6 +79,16 @@ const App = () => (
             }
           />
           <Route
+            path="/incidents"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <Incidents />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/settings"
             element={
               <RequireAuth>
@@ -91,7 +109,7 @@ const App = () => (
             }
           />
 
-          {/* Fallback */}
+          {/* Not Found */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

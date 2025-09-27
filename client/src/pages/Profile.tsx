@@ -3,10 +3,10 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { useAuthUser } from "@/hooks/useAuthUser"
+import { useUnifiedUser } from "@/hooks/useUnifiedUser"
 
 export default function Profile() {
-  const { user, loading } = useAuthUser()
+  const { user, loading } = useUnifiedUser()
 
   if (loading) {
     return (
@@ -24,8 +24,11 @@ export default function Profile() {
     )
   }
 
-  // Extract provider
-  const provider = user.app_metadata?.provider as "google" | "github" | "email"
+  // detect if it's a JWT (email) user or supabase user
+  const isEmailUser = !user.app_metadata
+  const provider = isEmailUser
+    ? "email"
+    : (user.app_metadata?.provider as "google" | "github" | "email")
 
   const providerLabel = {
     google: { name: "Google", color: "bg-red-500 text-white" },
@@ -36,7 +39,6 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center py-16 px-6">
       <div className="max-w-3xl w-full space-y-10">
-        {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold text-foreground">Profile</h1>
           <p className="text-muted-foreground">
@@ -51,7 +53,13 @@ export default function Profile() {
               <Label htmlFor="name">Full Name</Label>
               <Input
                 id="name"
-                defaultValue={provider == 'google' ? user.user_metadata?.full_name ?? "" : user.user_metadata?.user_name ?? ""}
+                defaultValue={
+                  isEmailUser
+                    ? user.fullName ?? ""
+                    : provider === "google"
+                    ? user.user_metadata?.full_name ?? ""
+                    : user.user_metadata?.user_name ?? ""
+                }
                 className="bg-card"
               />
             </div>
@@ -70,7 +78,7 @@ export default function Profile() {
             <Label htmlFor="bio">Bio</Label>
             <Input
               id="bio"
-              defaultValue={user.user_metadata?.bio ?? ""}
+              defaultValue={isEmailUser ? "" : user.user_metadata?.bio ?? ""}
               className="bg-card"
             />
           </div>
@@ -103,7 +111,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex justify-end">
           <Button>Save Changes</Button>
         </div>
