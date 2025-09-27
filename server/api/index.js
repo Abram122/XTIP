@@ -7,7 +7,7 @@ dotenv.config();
 
 const app = express();
 
-import indexRoutes from "./routes/index.js";
+import indexRoutes from "./Routes/index.js";
 
 // Middleware
 app.use(json());
