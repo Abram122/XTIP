@@ -71,3 +71,9 @@ export async function getReport(id: string) {
     })
     return res.data
 }
+
+// IP Reputation
+export async function getIpReputation(ip: string) {
+    const res = await axios.post(`${API_BASE}/ip/ip-reputation`, { ip }, { withCredentials: true })
+    return res.data
+}

@@ -11,7 +11,7 @@ import { Shield, Search, Globe, Zap, AlertTriangle, Lock, CheckCircle, XCircle }
 import { FcGoogle } from "react-icons/fc"
 import { FaGithub, FaEnvelope } from "react-icons/fa"
 import { supabase } from "@/lib/supabaseClient"
-import { getProfile, scanUrl, getReport } from "@/services/api"
+import { getProfile, scanUrl, getReport, getIpReputation } from "@/services/api"
 
 const fadeUp = {
     hidden: { opacity: 0, y: 30 },
@@ -59,6 +59,8 @@ export default function MarketingPage() {
     const [user, setUser] = useState<any>(null)
     const [loading, setLoading] = useState(false)
     const [lookupResult, setLookupResult] = useState<any>(null)
+    const [loadingIp, setLoadingIp] = useState(false)
+    const [ipResult, setIpResult] = useState<any>(null)
 
     const handleLogin = async (provider: "google" | "github") => {
         await supabase.auth.signInWithOAuth({ provider })
@@ -116,6 +118,22 @@ export default function MarketingPage() {
             setLookupResult({ status: "danger", error: "Error analyzing URL" })
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleIpLookup = async () => {
+        if (!ip) return
+        setLoadingIp(true)
+        setIpResult(null)
+
+        try {
+            const data = await getIpReputation(ip)
+            setIpResult(data.data || data)
+            console.log(data)
+        } catch (err) {
+            setIpResult({ error: "Failed to fetch IP reputation" })
+        } finally {
+            setLoadingIp(false)
         }
     }
 
@@ -285,10 +303,122 @@ export default function MarketingPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <Input placeholder="Enter an IP address" disabled={!user} className="rounded-lg" />
-                                    <Button className="w-full rounded-lg" disabled={!ip}>Check Reputation</Button>
-                                    {!user && <p className="text-sm text-muted-foreground">✨ Available with free account</p>}
+                                    <Input
+                                        placeholder="Enter an IP address"
+                                        value={ip}
+                                        onChange={(e) => setIp(e.target.value)}
+                                        className="rounded-lg"
+                                    />
+                                    <Button
+                                        onClick={handleIpLookup}
+                                        className="w-full rounded-lg"
+                                        disabled={!ip || loadingIp}
+                                    >
+                                        {loadingIp ? "Loading..." : "Check Reputation"}
+                                    </Button>
+
+                                    {ipResult && (
+                                        (() => {
+                                            // work with details wrapper (Pulsedive)
+                                            const details = ipResult.details ?? ipResult // fallback if backend already flattened
+                                            const riskStr = (details.risk ?? ipResult.reputation ?? "unknown").toString().toLowerCase()
+                                            const manualRisk = typeof details.manualrisk === "number" ? details.manualrisk : 0
+
+                                            const mapRiskToScore = (risk: string, manual = 0) => {
+                                                if (manual > 0) return Math.max(0, Math.min(100, Math.round(manual)))
+                                                switch (risk) {
+                                                    case "none": return 0
+                                                    case "unknown": return 20
+                                                    case "low": return 35
+                                                    case "medium": return 60
+                                                    case "high": return 85
+                                                    case "critical": return 95
+                                                    default: return 0
+                                                }
+                                            }
+
+                                            const score = mapRiskToScore(riskStr, manualRisk)
+
+                                            return (
+                                                <motion.div
+                                                    variants={fadeUp}
+                                                    initial="hidden"
+                                                    animate="show"
+                                                    className="p-4 rounded-lg border space-y-2 bg-card"
+                                                >
+                                                    {/* Risk header */}
+                                                    <div className="flex items-center gap-2 font-medium">
+                                                        {score > 50 ? (
+                                                            <XCircle className="w-5 h-5 text-red-500" />
+                                                        ) : (
+                                                            <CheckCircle className="w-5 h-5 text-green-500" />
+                                                        )}
+                                                        <span>
+                                                            Risk Score: {score} / 100 — {(details.risk ?? ipResult.reputation ?? "N/A").toString()}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Basic Info */}
+                                                    <div className="mt-2 space-y-1 text-sm">
+                                                        <p><span className="font-medium">Indicator:</span> {ipResult.indicator ?? details.indicator}</p>
+                                                        <p><span className="font-medium">Type:</span> {details.type ?? ipResult.type ?? "ip"}</p>
+                                                        <p><span className="font-medium">ASN:</span> {details.properties?.whois?.asn ?? "-"}</p>
+                                                        <p><span className="font-medium">ISP:</span> {details.properties?.whois?.isp ?? "-"}</p>
+                                                        <p><span className="font-medium">Country:</span> {details.properties?.geo?.country ?? details.properties?.geo?.country_name ?? "-"}</p>
+                                                        <p><span className="font-medium">City:</span> {details.properties?.geo?.city ?? "-"}</p>
+                                                        <p><span className="font-medium">Last Seen:</span> {details.stamp_seen ?? details.stamp_probed ?? "-"}</p>
+                                                    </div>
+
+                                                    {/* Threats */}
+                                                    {Array.isArray(details.threats) && details.threats.length > 0 && (
+                                                        <div className="mt-3">
+                                                            <p className="font-semibold">Threats:</p>
+                                                            <ul className="list-disc list-inside text-sm">
+                                                                {details.threats.map((t: any, i: number) => (
+                                                                    <li key={i} className="text-red-500">
+                                                                        {t.name ?? t.threat ?? "Unknown"} {t.risk ? `(${t.risk})` : ""} {t.category ? `- ${t.category}` : ""}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Risk Factors */}
+                                                    {Array.isArray(details.riskfactors) && details.riskfactors.length > 0 && (
+                                                        <div className="mt-3">
+                                                            <p className="font-semibold">Risk Factors:</p>
+                                                            <ul className="list-disc list-inside text-sm">
+                                                                {details.riskfactors.map((rf: any, i: number) => (
+                                                                    <li key={i}>
+                                                                        {rf.name ?? rf.factor ?? JSON.stringify(rf)}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Feeds */}
+                                                    {Array.isArray(details.feeds) && details.feeds.length > 0 && (
+                                                        <div className="mt-3">
+                                                            <p className="font-semibold">Feeds:</p>
+                                                            <ul className="list-disc list-inside text-sm max-h-32 overflow-y-auto">
+                                                                {details.feeds.map((feed: any, i: number) => (
+                                                                    <li key={i}>
+                                                                        {feed.name ?? feed.title} {feed.organization ? `- ${feed.organization}` : ""}
+                                                                        {feed.link && (
+                                                                            <> — <a href={feed.link} target="_blank" rel="noreferrer" className="underline">Details</a></>
+                                                                        )}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </motion.div>
+                                            )
+                                        })()
+                                    )}
                                 </CardContent>
+
                             </Card>
                         </motion.div>
                         <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
