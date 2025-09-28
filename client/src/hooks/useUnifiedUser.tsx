@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
-import { getMe } from "@/services/api"
+import { getProfile } from "@/services/api"
 
 export function useUnifiedUser() {
     const [user, setUser] = useState<any>(null)
@@ -18,9 +18,9 @@ export function useUnifiedUser() {
             }
 
             try {
-                const data = await getMe()
-                if (data?.userId) {
-                    setUser(data)
+                const data = await getProfile()
+                if (data.user?.id) {
+                    setUser(data.user)
                 } else {
                     setUser(null)
                 }

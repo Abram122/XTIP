@@ -11,7 +11,7 @@ import { Shield, Search, Globe, Zap, AlertTriangle, Lock, CheckCircle, XCircle }
 import { FcGoogle } from "react-icons/fc"
 import { FaGithub, FaEnvelope } from "react-icons/fa"
 import { supabase } from "@/lib/supabaseClient"
-import { getMe } from "@/services/api"
+import { getProfile, scanUrl, getReport } from "@/services/api"
 
 const fadeUp = {
     hidden: { opacity: 0, y: 30 },
@@ -53,9 +53,12 @@ function AuthButtons({ handleLogin }: { handleLogin: (provider: "google" | "gith
 
 export default function MarketingPage() {
     const [url, setUrl] = useState("")
+    const [ip, setIp] = useState("")
+    const [scanner, setScanner] = useState("")
     const [open, setOpen] = useState(false)
-    const [lookupResult, setLookupResult] = useState<{ status: 'safe' | 'danger' | null, message: string } | null>(null)
     const [user, setUser] = useState<any>(null)
+    const [loading, setLoading] = useState(false)
+    const [lookupResult, setLookupResult] = useState<any>(null)
 
     const handleLogin = async (provider: "google" | "github") => {
         await supabase.auth.signInWithOAuth({ provider })
@@ -70,9 +73,9 @@ export default function MarketingPage() {
                 return
             }
             try {
-                const data = await getMe()
-                if (data?.userId) {
-                    setUser(data)
+                const data = await getProfile()
+                if (data.user?.id) {
+                    setUser(data.user)
                 }
             } catch {
                 setUser(null)
@@ -81,13 +84,39 @@ export default function MarketingPage() {
         checkLogin()
     }, [])
 
-    const handleLookup = () => {
+    const handleLookup = async () => {
         if (!url) return
-        const isSafe = Math.random() > 0.3
-        setLookupResult({
-            status: isSafe ? 'safe' : 'danger',
-            message: isSafe ? 'No threats detected' : 'Potential security risks found'
-        })
+        setLoading(true)
+        setLookupResult(null)
+
+        try {
+            const scan = await scanUrl(url)
+            const analysisId = scan?.data?.id
+
+            if (!analysisId) {
+                setLookupResult({ status: "danger", error: "Failed to scan URL" })
+                return
+            }
+
+            const report = await getReport(analysisId)
+            const stats = report?.data?.attributes?.stats || {}
+
+            const malicious = stats.malicious || 0
+            const suspicious = stats.suspicious || 0
+            const harmless = stats.harmless || 0
+            const undetected = stats.undetected || 0
+
+            const isMalicious = malicious > 0 || suspicious > 0
+
+            setLookupResult({
+                status: isMalicious ? "danger" : "safe",
+                stats: { malicious, suspicious, harmless, undetected },
+            })
+        } catch (err) {
+            setLookupResult({ status: "danger", error: "Error analyzing URL" })
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -124,7 +153,7 @@ export default function MarketingPage() {
                     >
                         {user ? (
                             <div className="flex flex-col items-center gap-2">
-                                <p className="text-lg font-semibold">Welcome back, {user.email || user.fullName}</p>
+                                <p className="text-lg font-semibold">Welcome back, {user.fullName || user.email}</p>
                                 <Link to="/overview">
                                     <Button
                                         size="lg"
@@ -187,25 +216,61 @@ export default function MarketingPage() {
                                         onChange={(e) => setUrl(e.target.value)}
                                         className="rounded-lg"
                                     />
-                                    <Button onClick={handleLookup} className="w-full rounded-lg" disabled={!url}>
-                                        Analyze URL
+                                    <Button
+                                        onClick={handleLookup}
+                                        className="w-full rounded-lg"
+                                        disabled={!url || loading}
+                                    >
+                                        {loading ? "Loading..." : "Analyze URL"}
                                     </Button>
+
                                     {lookupResult && (
                                         <motion.div
                                             variants={fadeUp}
                                             initial="hidden"
                                             animate="show"
-                                            className={`flex items-center gap-2 p-3 rounded-lg ${lookupResult.status === 'safe'
-                                                ? 'bg-green-500/10 text-green-500'
-                                                : 'bg-red-500/10 text-red-500'
+                                            className={`p-4 rounded-lg border space-y-2 ${lookupResult.status === "safe"
+                                                ? "border-green-500/30 bg-green-500/5"
+                                                : "border-red-500/30 bg-red-500/5"
                                                 }`}
                                         >
-                                            {lookupResult.status === 'safe' ? (
-                                                <CheckCircle className="w-5 h-5" />
-                                            ) : (
-                                                <XCircle className="w-5 h-5" />
+                                            <div className="flex items-center gap-2 font-medium">
+                                                {lookupResult.status === "safe" ? (
+                                                    <CheckCircle className="w-5 h-5 text-green-500" />
+                                                ) : (
+                                                    <XCircle className="w-5 h-5 text-red-500" />
+                                                )}
+                                                <span>
+                                                    {lookupResult.status === "safe"
+                                                        ? "No threats detected"
+                                                        : "Threats detected"}
+                                                </span>
+                                            </div>
+
+                                            {lookupResult.stats && (
+                                                <div className="mt-2 space-y-1 text-sm">
+                                                    <p className="flex justify-between">
+                                                        <span className="text-red-500">Malicious</span>
+                                                        <span>{lookupResult.stats.malicious}</span>
+                                                    </p>
+                                                    <p className="flex justify-between">
+                                                        <span className="text-yellow-500">Suspicious</span>
+                                                        <span>{lookupResult.stats.suspicious}</span>
+                                                    </p>
+                                                    <p className="flex justify-between">
+                                                        <span className="text-green-500">Harmless</span>
+                                                        <span>{lookupResult.stats.harmless}</span>
+                                                    </p>
+                                                    <p className="flex justify-between">
+                                                        <span className="text-gray-500">Undetected</span>
+                                                        <span>{lookupResult.stats.undetected}</span>
+                                                    </p>
+                                                </div>
                                             )}
-                                            <span className="text-sm font-medium">{lookupResult.message}</span>
+
+                                            {lookupResult.error && (
+                                                <p className="text-red-500 text-sm">{lookupResult.error}</p>
+                                            )}
                                         </motion.div>
                                     )}
                                 </CardContent>
@@ -220,9 +285,9 @@ export default function MarketingPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <Input placeholder="Enter an IP address" disabled className="rounded-lg" />
-                                    <Button className="w-full rounded-lg" disabled>Check Reputation</Button>
-                                    <p className="text-sm text-muted-foreground">✨ Available with free account</p>
+                                    <Input placeholder="Enter an IP address" disabled={!user} className="rounded-lg" />
+                                    <Button className="w-full rounded-lg" disabled={!ip}>Check Reputation</Button>
+                                    {!user && <p className="text-sm text-muted-foreground">✨ Available with free account</p>}
                                 </CardContent>
                             </Card>
                         </motion.div>
@@ -235,9 +300,9 @@ export default function MarketingPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <Input placeholder="Enter indicator or hash" disabled className="rounded-lg" />
-                                    <Button className="w-full rounded-lg" disabled>Analyze Threat</Button>
-                                    <p className="text-sm text-muted-foreground">✨ Available with free account</p>
+                                    <Input placeholder="Enter indicator or hash" disabled={!user} className="rounded-lg" />
+                                    <Button className="w-full rounded-lg" disabled={!scanner}>Analyze Threat</Button>
+                                    {!user && <p className="text-sm text-muted-foreground">✨ Available with free account</p>}
                                 </CardContent>
                             </Card>
                         </motion.div>
