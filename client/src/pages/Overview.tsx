@@ -22,7 +22,6 @@ import {
   Activity,
 } from "lucide-react";
 import { ThreatMap } from "@/components/ThreatMap";
-import { NewsSection } from "@/components/NewsSection";
 import {
   mockStats,
   mockThreats,
@@ -168,8 +167,7 @@ export default function Overview() {
         </CardContent>
       </Card>
 
-      {/* Map & News */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* Map */}
         <Card className="border-border shadow-md">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-foreground">
@@ -180,17 +178,6 @@ export default function Overview() {
             <ThreatMap />
           </CardContent>
         </Card>
-        <Card className="border-border shadow-md">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-foreground">
-              Latest Cyber News
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <NewsSection />
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

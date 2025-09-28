@@ -3,6 +3,7 @@ import {
   registerUser,
   loginUser,
   saveAuthUser,
+  logoutUser,
 } from "../Controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -14,5 +15,6 @@ router.get("/me", protect, (req, res) => {
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/save", saveAuthUser);
+router.post("/logout", logoutUser);
 
 export default router;

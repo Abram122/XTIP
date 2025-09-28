@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ import { Shield, Search, Globe, Zap, AlertTriangle, Lock, CheckCircle, XCircle }
 import { FcGoogle } from "react-icons/fc"
 import { FaGithub, FaEnvelope } from "react-icons/fa"
 import { supabase } from "@/lib/supabaseClient"
+import { getMe } from "@/services/api"
 
 const fadeUp = {
     hidden: { opacity: 0, y: 30 },
@@ -26,25 +27,23 @@ function AuthButtons({ handleLogin }: { handleLogin: (provider: "google" | "gith
         <div className="flex flex-col gap-3">
             <Button
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 rounded-xl py-5 text-base font-medium shadow-sm hover:shadow-md transition"
                 onClick={() => handleLogin("google")}
             >
-                <FcGoogle className="w-5 h-5" />
+                <FcGoogle className="w-6 h-6" />
                 Continue with Google
             </Button>
-
             <Button
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 rounded-xl py-5 text-base font-medium shadow-sm hover:shadow-md transition"
                 onClick={() => handleLogin("github")}
             >
-                <FaGithub className="w-5 h-5" />
+                <FaGithub className="w-6 h-6" />
                 Continue with GitHub
             </Button>
-
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="rounded-xl py-5 text-base font-medium shadow-sm hover:shadow-md transition">
                 <Link to="/login" className="flex items-center gap-2 w-full justify-center">
-                    <FaEnvelope className="w-5 h-5 text-blue-500" />
+                    <FaEnvelope className="w-6 h-6 text-blue-500" />
                     Continue with Email
                 </Link>
             </Button>
@@ -56,11 +55,31 @@ export default function MarketingPage() {
     const [url, setUrl] = useState("")
     const [open, setOpen] = useState(false)
     const [lookupResult, setLookupResult] = useState<{ status: 'safe' | 'danger' | null, message: string } | null>(null)
+    const [user, setUser] = useState<any>(null)
 
-    const handleLogin = (provider: "google" | "github") => {
-        supabase.auth.signInWithOAuth({ provider })
+    const handleLogin = async (provider: "google" | "github") => {
+        await supabase.auth.signInWithOAuth({ provider })
         setOpen(false)
     }
+
+    useEffect(() => {
+        async function checkLogin() {
+            const { data } = await supabase.auth.getUser()
+            if (data?.user) {
+                setUser(data.user)
+                return
+            }
+            try {
+                const data = await getMe()
+                if (data?.userId) {
+                    setUser(data)
+                }
+            } catch {
+                setUser(null)
+            }
+        }
+        checkLogin()
+    }, [])
 
     const handleLookup = () => {
         if (!url) return
@@ -74,17 +93,10 @@ export default function MarketingPage() {
     return (
         <Layout>
             <div className="flex flex-col bg-gradient-to-b from-background via-card/30 to-background text-foreground min-h-screen">
-
-                {/* Hero Section */}
                 <section className="flex flex-col items-center justify-center text-center py-32 relative overflow-hidden">
-                    <motion.div
-                        initial="hidden"
-                        animate="show"
-                        variants={fadeUp}
-                    >
+                    <motion.div initial="hidden" animate="show" variants={fadeUp}>
                         <Shield className="w-20 h-20 text-primary mx-auto mb-8" />
                     </motion.div>
-
                     <motion.h1
                         variants={fadeUp}
                         initial="hidden"
@@ -93,7 +105,6 @@ export default function MarketingPage() {
                     >
                         Cyber Threat Intelligence Platform
                     </motion.h1>
-
                     <motion.p
                         variants={fadeUp}
                         initial="hidden"
@@ -104,7 +115,6 @@ export default function MarketingPage() {
                         Protect your digital assets with advanced threat intelligence.
                         Free security tools for everyone, enterprise features for professionals.
                     </motion.p>
-
                     <motion.div
                         variants={fadeUp}
                         initial="hidden"
@@ -112,30 +122,44 @@ export default function MarketingPage() {
                         custom={2}
                         className="flex gap-4"
                     >
-                        <Dialog open={open} onOpenChange={setOpen}>
-                            <DialogTrigger asChild>
-                                <Button
-                                    size="lg"
-                                    className="px-8 py-6 text-lg font-semibold bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl hover:scale-105 transition"
-                                    onClick={() => setOpen(true)}
-                                >
-                                    Get Started Free
+                        {user ? (
+                            <div className="flex flex-col items-center gap-2">
+                                <p className="text-lg font-semibold">Welcome back, {user.email || user.fullName}</p>
+                                <Link to="/overview">
+                                    <Button
+                                        size="lg"
+                                        className="px-8 py-6 text-lg font-semibold bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl hover:scale-105 transition"
+                                    >
+                                        Go to Dashboard
+                                    </Button>
+                                </Link>
+                            </div>
+                        ) : (
+                            <>
+                                <Dialog open={open} onOpenChange={setOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            size="lg"
+                                            className="px-8 py-6 text-lg font-semibold bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl hover:scale-105 transition"
+                                            onClick={() => setOpen(true)}
+                                        >
+                                            Get Started Free
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="rounded-xl p-8">
+                                        <DialogHeader>
+                                            <DialogTitle className="text-xl font-bold mb-4">Sign in</DialogTitle>
+                                        </DialogHeader>
+                                        <AuthButtons handleLogin={handleLogin} />
+                                    </DialogContent>
+                                </Dialog>
+                                <Button size="lg" variant="outline" className="px-8 py-6 text-lg font-semibold rounded-xl shadow hover:shadow-md">
+                                    Watch Demo
                                 </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Sign in</DialogTitle>
-                                </DialogHeader>
-                                <AuthButtons handleLogin={handleLogin} />
-                            </DialogContent>
-                        </Dialog>
-                        <Button size="lg" variant="outline" className="px-8 py-6 text-lg font-semibold">
-                            Watch Demo
-                        </Button>
+                            </>
+                        )}
                     </motion.div>
                 </section>
-
-                {/* Tools Section */}
                 <section className="py-20 px-6">
                     <motion.div
                         variants={fadeUp}
@@ -144,14 +168,12 @@ export default function MarketingPage() {
                         viewport={{ once: true }}
                         className="text-center mb-16"
                     >
-                        <Badge variant="outline" className="mb-4">Free Security Tools</Badge>
+                        <Badge variant="outline" className="mb-4 px-4 py-1 text-sm">Free Security Tools</Badge>
                         <h2 className="text-3xl font-bold">Protect Your Digital Assets</h2>
                     </motion.div>
-
                     <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
-                        {/* URL Lookup */}
                         <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-                            <Card className="hover:shadow-xl transition border-2 border-primary/20">
+                            <Card className="hover:shadow-xl transition border-2 border-primary/20 rounded-xl">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Search className="w-5 h-5 text-primary" />
@@ -163,8 +185,9 @@ export default function MarketingPage() {
                                         placeholder="Enter a URL to scan"
                                         value={url}
                                         onChange={(e) => setUrl(e.target.value)}
+                                        className="rounded-lg"
                                     />
-                                    <Button onClick={handleLookup} className="w-full" disabled={!url}>
+                                    <Button onClick={handleLookup} className="w-full rounded-lg" disabled={!url}>
                                         Analyze URL
                                     </Button>
                                     {lookupResult && (
@@ -173,8 +196,8 @@ export default function MarketingPage() {
                                             initial="hidden"
                                             animate="show"
                                             className={`flex items-center gap-2 p-3 rounded-lg ${lookupResult.status === 'safe'
-                                                    ? 'bg-green-500/10 text-green-500'
-                                                    : 'bg-red-500/10 text-red-500'
+                                                ? 'bg-green-500/10 text-green-500'
+                                                : 'bg-red-500/10 text-red-500'
                                                 }`}
                                         >
                                             {lookupResult.status === 'safe' ? (
@@ -188,10 +211,8 @@ export default function MarketingPage() {
                                 </CardContent>
                             </Card>
                         </motion.div>
-
-                        {/* IP Reputation */}
                         <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-                            <Card className="hover:shadow-xl transition border-2 border-primary/20">
+                            <Card className="hover:shadow-xl transition border-2 border-primary/20 rounded-xl">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Globe className="w-5 h-5 text-primary" />
@@ -199,16 +220,14 @@ export default function MarketingPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <Input placeholder="Enter an IP address" disabled />
-                                    <Button className="w-full" disabled>Check Reputation</Button>
+                                    <Input placeholder="Enter an IP address" disabled className="rounded-lg" />
+                                    <Button className="w-full rounded-lg" disabled>Check Reputation</Button>
                                     <p className="text-sm text-muted-foreground">✨ Available with free account</p>
                                 </CardContent>
                             </Card>
                         </motion.div>
-
-                        {/* Threat Scanner */}
                         <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-                            <Card className="hover:shadow-xl transition border-2 border-primary/20">
+                            <Card className="hover:shadow-xl transition border-2 border-primary/20 rounded-xl">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <AlertTriangle className="w-5 h-5 text-primary" />
@@ -216,16 +235,14 @@ export default function MarketingPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <Input placeholder="Enter indicator or hash" disabled />
-                                    <Button className="w-full" disabled>Analyze Threat</Button>
+                                    <Input placeholder="Enter indicator or hash" disabled className="rounded-lg" />
+                                    <Button className="w-full rounded-lg" disabled>Analyze Threat</Button>
                                     <p className="text-sm text-muted-foreground">✨ Available with free account</p>
                                 </CardContent>
                             </Card>
                         </motion.div>
                     </div>
                 </section>
-
-                {/* Why CTIP */}
                 <section className="py-20 px-6 bg-muted/20">
                     <div className="max-w-6xl mx-auto">
                         <motion.div
@@ -235,10 +252,9 @@ export default function MarketingPage() {
                             viewport={{ once: true }}
                             className="text-center mb-16"
                         >
-                            <Badge variant="outline" className="mb-4">Why Choose CTIP</Badge>
+                            <Badge variant="outline" className="mb-4 px-4 py-1 text-sm">Why Choose CTIP</Badge>
                             <h2 className="text-3xl font-bold">Enterprise-Grade Security For All</h2>
                         </motion.div>
-
                         <div className="grid gap-8 md:grid-cols-3">
                             {[Shield, Zap, Lock].map((Icon, i) => (
                                 <motion.div
@@ -266,8 +282,6 @@ export default function MarketingPage() {
                         </div>
                     </div>
                 </section>
-
-                {/* CTA Section */}
                 <section className="py-20 px-6">
                     <motion.div
                         variants={fadeUp}
@@ -280,19 +294,27 @@ export default function MarketingPage() {
                         <p className="text-xl text-muted-foreground mb-8">
                             Join thousands of security professionals who trust CTIP
                         </p>
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button size="lg" className="px-8 py-6 text-lg font-semibold bg-primary">
-                                    Get Started Free
+                        {user ? (
+                            <Link to="/overview">
+                                <Button size="lg" className="px-8 py-6 text-lg font-semibold bg-primary rounded-xl shadow hover:shadow-md">
+                                    Go to Dashboard
                                 </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Sign in</DialogTitle>
-                                </DialogHeader>
-                                <AuthButtons handleLogin={handleLogin} />
-                            </DialogContent>
-                        </Dialog>
+                            </Link>
+                        ) : (
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button size="lg" className="px-8 py-6 text-lg font-semibold bg-primary rounded-xl shadow hover:shadow-md">
+                                        Get Started Free
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="rounded-xl p-8">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-xl font-bold mb-4">Sign in</DialogTitle>
+                                    </DialogHeader>
+                                    <AuthButtons handleLogin={handleLogin} />
+                                </DialogContent>
+                            </Dialog>
+                        )}
                     </motion.div>
                 </section>
             </div>

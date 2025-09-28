@@ -18,6 +18,7 @@ import SignupForm from "./components/SignupForm";
 import LoginForm from "./components/LoginForm";
 import Incidents from "./pages/Incidents";
 import MarketingPage from "./pages/MarketingPage";
+import { NewsPage } from "./pages/NewsPage";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +85,16 @@ const App = () => (
               <RequireAuth>
                 <Layout>
                   <Incidents />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/news"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <NewsPage />
                 </Layout>
               </RequireAuth>
             }
