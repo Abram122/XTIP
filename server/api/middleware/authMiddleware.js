@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import User from "../Models/User.js";
 import { createClient } from "@supabase/supabase-js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
