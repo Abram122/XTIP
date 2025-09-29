@@ -12,7 +12,10 @@ import indexRoutes from "./Routes/index.js"
 
 app.use(json())
 app.use(
-  cors()
+  cors({
+    origin: "https://xtip.vercel.app",
+    credentials: true,
+  })
 )
 app.use(morgan("dev"))
 app.use(cookieParser())
