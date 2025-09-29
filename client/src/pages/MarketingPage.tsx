@@ -218,7 +218,7 @@ export default function MarketingPage() {
                         <Badge variant="outline" className="mb-4 px-4 py-1 text-sm">Free Security Tools</Badge>
                         <h2 className="text-3xl font-bold">Protect Your Digital Assets</h2>
                     </motion.div>
-                    <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
+                    <div className="grid gap-8 md:grid-cols-2 max-w-6xl mx-auto">
                         <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
                             <Card className="hover:shadow-xl transition border-2 border-primary/20 rounded-xl">
                                 <CardHeader>
@@ -420,21 +420,6 @@ export default function MarketingPage() {
                                     )}
                                 </CardContent>
 
-                            </Card>
-                        </motion.div>
-                        <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-                            <Card className="hover:shadow-xl transition border-2 border-primary/20 rounded-xl">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <AlertTriangle className="w-5 h-5 text-primary" />
-                                        Threat Scanner
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <Input placeholder="Enter indicator or hash" disabled={!user} className="rounded-lg" />
-                                    <Button className="w-full rounded-lg" disabled={!scanner}>Analyze Threat</Button>
-                                    {!user && <p className="text-sm text-muted-foreground">✨ Available with free account</p>}
-                                </CardContent>
                             </Card>
                         </motion.div>
                     </div>
