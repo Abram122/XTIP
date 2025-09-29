@@ -111,7 +111,11 @@ export const saveAuthUser = async (req, res) => {
 
         let user = await User.findOne({ email });
 
-        if (!user) {
+        if (user) {
+            user.fullName = name || user.fullName;
+            user.updatedAt = new Date();
+            await user.save();
+        } else {
             user = new User({
                 fullName: name || "Unknown",
                 email,
@@ -120,8 +124,7 @@ export const saveAuthUser = async (req, res) => {
             await user.save();
         }
 
-        const token = generateToken(user.id);
-
+        const token = generateToken(user._id);
         res.cookie("token", token, {
             httpOnly: true,
             secure: true,
@@ -129,7 +132,7 @@ export const saveAuthUser = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        res.status(200).json({ success: true, user, token });
+        res.status(200).json({ success: true, user });
     } catch (err) {
         console.error("Error saving auth user:", err);
         res.status(500).json({ error: "Server error" });
