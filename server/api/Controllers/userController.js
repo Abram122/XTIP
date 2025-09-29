@@ -86,8 +86,8 @@ export const loginUser = async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: true, 
-            sameSite: "none", 
+            secure: true,
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         })
 
@@ -100,6 +100,7 @@ export const loginUser = async (req, res) => {
         res.status(500).json({ message: err.message })
     }
 }
+
 export const saveAuthUser = async (req, res) => {
     try {
         const { email, name, provider } = req.body;
@@ -108,16 +109,9 @@ export const saveAuthUser = async (req, res) => {
             return res.status(400).json({ error: "Email is required" });
         }
 
-        // Find existing user
         let user = await User.findOne({ email });
 
-        if (user) {
-            // Update existing user
-            user.fullName = name || user.fullName;
-            user.updatedAt = new Date();
-            await user.save();
-        } else {
-            // Create new user
+        if (!user) {
             user = new User({
                 fullName: name || "Unknown",
                 email,
@@ -126,12 +120,22 @@ export const saveAuthUser = async (req, res) => {
             await user.save();
         }
 
-        res.status(200).json({ success: true, user });
+        const token = generateToken(user.id);
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        res.status(200).json({ success: true, user, token });
     } catch (err) {
         console.error("Error saving auth user:", err);
         res.status(500).json({ error: "Server error" });
     }
 };
+
 export const getProfile = async (req, res) => {
     try {
         let user = await User.findOne({ _id: req.user });
