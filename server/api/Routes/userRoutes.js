@@ -15,8 +15,8 @@ router.get("/me", protect, (req, res) => {
     res.json({ message: "User data", userId: req.user.id });
 });
 
-router.get("/myprofile", protect, getProfile);
-router.patch("/updateprofile", protect, updateProfile);
+router.get("/myprofile", getProfile);
+router.patch("/updateprofile", updateProfile);
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/save", saveAuthUser);
