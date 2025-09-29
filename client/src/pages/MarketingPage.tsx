@@ -306,6 +306,7 @@ export default function MarketingPage() {
                                     <Input
                                         placeholder="Enter an IP address"
                                         value={ip}
+                                        disabled={!user}
                                         onChange={(e) => setIp(e.target.value)}
                                         className="rounded-lg"
                                     />
@@ -316,10 +317,10 @@ export default function MarketingPage() {
                                     >
                                         {loadingIp ? "Loading..." : "Check Reputation"}
                                     </Button>
+                                    {!user && <p className="text-sm text-muted-foreground">✨ Available with free account</p>}
 
                                     {ipResult && (
                                         (() => {
-                                            // work with details wrapper (Pulsedive)
                                             const details = ipResult.details ?? ipResult // fallback if backend already flattened
                                             const riskStr = (details.risk ?? ipResult.reputation ?? "unknown").toString().toLowerCase()
                                             const manualRisk = typeof details.manualrisk === "number" ? details.manualrisk : 0

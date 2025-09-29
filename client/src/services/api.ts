@@ -23,11 +23,6 @@ export async function updateProfile(payload: {
     })
     return res.data
 }
-// Get all incidents
-export async function getIncidents() {
-    const res = await axios.get(`${API_BASE}/incident`, { withCredentials: true })
-    return res.data
-}
 
 // Get news incidents
 export async function getNews() {
@@ -75,5 +70,35 @@ export async function getReport(id: string) {
 // IP Reputation
 export async function getIpReputation(ip: string) {
     const res = await axios.post(`${API_BASE}/ip/ip-reputation`, { ip }, { withCredentials: true })
+    return res.data
+}
+
+// Get incidents with filters
+export async function getIncidents(filters?: { status?: string; name?: string; date?: string }) {
+    const params = new URLSearchParams()
+    if (filters?.status) params.append("status", filters.status)
+    if (filters?.name) params.append("name", filters.name)
+    if (filters?.date) params.append("date", filters.date)
+
+    const res = await axios.get(`${API_BASE}/incident`, {
+        params,
+        withCredentials: true,
+    })
+    return res.data
+}
+
+// Update incident 
+export async function updateIncident(id: string, body: any) {
+    const res = await axios.put(`${API_BASE}/incident/${id}`, body, { withCredentials: true })
+    return res.data
+}
+
+// Add note to incident
+export async function addIncidentNote(id: string, note: string) {
+    const res = await axios.put(
+        `${API_BASE}/incident/${id}`,
+        { $push: { notes: note } },
+        { withCredentials: true }
+    )
     return res.data
 }

@@ -6,6 +6,7 @@ import feedRoutes from "./feedRoutes.js";
 import newsRoutes from "./newsRoutes.js";
 import URLLookupRoutes from "./URLLookupRoutes.js";
 import ipRoutes from "./ipRoutes.js";
+import incidentRoutes from "./incidentRoutes.js";
 
 const router = Router();
 router.use("/user", userRoutes);
@@ -14,5 +15,6 @@ router.use("/news", newsRoutes);
 router.use("/feeds", feedRoutes);
 router.use("/url", URLLookupRoutes);
 router.use("/ip", ipRoutes);
+router.use("/incident", incidentRoutes);
 
 export default router;
