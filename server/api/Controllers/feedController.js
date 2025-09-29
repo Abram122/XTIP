@@ -260,50 +260,24 @@ const sansGetIP = asyncHandler(async (req, res) => {
     "ip"
   );
 
-  return res.json({ status: httpStatusText.SUCCESS, feeds: normalized });
+  return res.json({ status: httpStatusText.SUCCESS, feedsNormalized: normalized , feedsRaw: response.data});
 });
 
 const sansGetTopSources = asyncHandler(async (req, res) => {
-  const url = `${SANS_BASE}/topips?json`;
-  const response = await axios.get(url, { timeout: 10000 });
+    const { top_sources_number = 10 } = req.query;
+  const url = `${SANS_BASE}/topips/records/${top_sources_number}?json`;
+  
+  const response = await axios.get(url);
 
-  const normalized = response.data.topips.map((src) =>
-    normalize(
-      {
-        indicator: src.ip,
-        type: "ip",
-        threatType: "top source",
-        severity: severityEnum.HIGH,
-      },
-      "ip"
-    )
-  );
-
-  return res.json({ status: httpStatusText.SUCCESS, feeds: normalized });
+  return res.json({ status: httpStatusText.SUCCESS, feeds: response.data});
 });
 
 const sansGetInfoCon = asyncHandler(async (_req, res) => {
   const url = `${SANS_BASE}/infocon?json`;
   const response = await axios.get(url, { timeout: 5000 });
 
-  const severity =
-    response.data.infocon?.toLowerCase() === "green"
-      ? severityEnum.LOW
-      : response.data.infocon?.toLowerCase() === "yellow"
-      ? severityEnum.MEDIUM
-      : severityEnum.HIGH;
 
-  const normalized = normalize(
-    {
-      indicator: "global",
-      type: "status",
-      threatType: "internet threat level",
-      severity,
-    },
-    "status"
-  );
-
-  return res.json({ status: httpStatusText.SUCCESS, feeds: normalized });
+  return res.json({ status: httpStatusText.SUCCESS, feeds: response.data });
 });
 
 const sansGetIPDetails = asyncHandler(async (req, res) => {
@@ -321,30 +295,20 @@ const sansGetIPDetails = asyncHandler(async (req, res) => {
     "ip"
   );
 
-  return res.json({ status: httpStatusText.SUCCESS, feeds: normalized });
+  return res.json({ status: httpStatusText.SUCCESS, feedsNormalized: normalized, feedsRaw: response.data });
 });
 
 const sansGetPort = asyncHandler(async (req, res) => {
-  const url = `${SANS_BASE}/ports?json`;
+  const url = `${SANS_BASE}/port?json`;
   const response = await axios.get(url, { timeout: 10000 });
 
-  const normalized = response.data.ports.map((prt) =>
-    normalize(
-      {
-        indicator: prt.port,
-        type: "port",
-        threatType: "top port",
-        severity: severityEnum.HIGH,
-      },
-      "port"
-    )
-  );
 
-  return res.json({ status: httpStatusText.SUCCESS, feeds: normalized });
+  return res.json({ status: httpStatusText.SUCCESS, feeds: response.data });
 });
 
-const sansGetTopPorts = asyncHandler(async (_req, res) => {
-  const url = `${SANS_BASE}/ports?json`;
+const sansGetTopPorts = asyncHandler(async (req, res) => {
+    const {limit=10} = req.query;
+  const url = `${SANS_BASE}/topports/records/${limit}?json`;
   const response = await axios.get(url, { timeout: 10000 });
 
   return res.json({ status: httpStatusText.SUCCESS, topPorts: response.data });
