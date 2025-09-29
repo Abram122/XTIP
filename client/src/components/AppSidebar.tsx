@@ -87,7 +87,7 @@ export function AppSidebar() {
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <Sidebar className="h-full min-h-screen w-full max-w-[280px] border-r border-border/50 bg-background/95 shadow-xl backdrop-blur-md">
+      <Sidebar className="h-full min-h-screen w-full max-w-[255px] border-r border-border/50 bg-background/95 shadow-xl backdrop-blur-md">
         <SidebarContent className="flex flex-col h-full">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}

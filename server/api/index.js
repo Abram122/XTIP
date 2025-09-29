@@ -12,10 +12,7 @@ import indexRoutes from "./Routes/index.js"
 
 app.use(json())
 app.use(
-  cors({
-    origin: "https://ctip-awnv.vercel.app",
-    credentials: true,
-  })
+  cors()
 )
 app.use(morgan("dev"))
 app.use(cookieParser())

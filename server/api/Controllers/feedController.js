@@ -12,6 +12,7 @@ const SHODAN_KEY = process.env.SHODAN_API_KEY;
 const SHODAN_BASE = "https://api.shodan.io";
 const SANS_BASE = "https://isc.sans.edu/api";
 
+
 const normalize = (data, type, source = "SANS ISC") => {
   return {
     indicator: data.indicator || data.ip || data.port || "unknown",
@@ -25,6 +26,7 @@ const normalize = (data, type, source = "SANS ISC") => {
   };
 };
 
+// MS- VirusTotal
 const getVirusTotalIPScan = asyncHandler(async (req, res) => {
   const { ip } = req.params;
 
@@ -103,6 +105,8 @@ const getVirusTotalFileHashScan = asyncHandler(async (req, res) => {
 
   return res.json({ status: httpStatusText.SUCCESS, feeds: vtData });
 });
+
+// MS- AbuseIPDB
 
 const getAbuseIP = asyncHandler(async (req, res) => {
   const { ip } = req.params;
@@ -183,6 +187,8 @@ const downloadBlacklist = asyncHandler(async (req, res) => {
   });
 });
 
+
+// MS- Shodan
 const shodanGetHostInfo = asyncHandler(async (req, res) => {
   const { ip } = req.params;
 
@@ -245,6 +251,8 @@ const shodanGetApiInfo = asyncHandler(async (req, res) => {
   return res.json({ status: httpStatusText.SUCCESS, apiInfo: response.data });
 });
 
+
+// MS- SANS ISC
 const sansGetIP = asyncHandler(async (req, res) => {
   const { ip } = req.params;
   const url = `${SANS_BASE}/ip/${encodeURIComponent(ip)}?json`;
@@ -313,6 +321,7 @@ const sansGetTopPorts = asyncHandler(async (req, res) => {
 
   return res.json({ status: httpStatusText.SUCCESS, topPorts: response.data });
 });
+
 
 export default {
   getVirusTotalIPScan,

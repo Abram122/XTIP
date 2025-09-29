@@ -1,182 +1,209 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import React, { useState } from "react";
+import axios from "axios";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockThreats, getSeverityBadgeClass } from "@/lib/mockData";
-import { Database, Search, Filter, RefreshCw } from "lucide-react";
-import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { RefreshCw } from "lucide-react";
+
+const API_BASE = "http://localhost:3000/api/feeds";
+
+// --- format values user-friendly ---
+const formatValue = (key: string, value: any) => {
+  if (value == null) return "-";
+
+  const k = key.toLowerCase();
+
+  // hide raw completely
+  if (k.includes("raw")) return null;
+
+  // severity → colored badge
+  if (k === "severity") {
+    const sev = String(value).toUpperCase();
+    let color = "bg-gray-500";
+    if (sev.includes("CRIT")) color = "bg-red-600";
+    else if (sev.includes("HIGH")) color = "bg-orange-500";
+    else if (sev.includes("MED")) color = "bg-yellow-400 text-black";
+    else if (sev.includes("LOW")) color = "bg-green-500";
+    else if (sev.includes("INFO")) color = "bg-blue-500";
+    return <Badge className={`${color} text-white`}>{sev}</Badge>;
+  }
+
+  // infocon → colored badge
+  if (k === "infocon") {
+    const val = String(value).toLowerCase();
+    let color = "bg-gray-500";
+    if (val === "green") color = "bg-green-500";
+    else if (val === "yellow") color = "bg-yellow-400 text-black";
+    else if (val === "orange") color = "bg-orange-500";
+    else if (val === "red") color = "bg-red-600";
+    return <Badge className={`${color} text-white`}>{val.toUpperCase()}</Badge>;
+  }
+
+  // timestamps
+  if (k.includes("time") || k.includes("date") || k.includes("at")) {
+    try {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) return date.toLocaleString();
+    } catch {
+      return String(value);
+    }
+  }
+
+  // arrays → join
+  if (Array.isArray(value)) return value.join(", ");
+
+  if (typeof value === "object") {
+    // instead of dumping JSON, show keys
+    return Object.keys(value).join(", ");
+  }
+
+  return String(value);
+};
+
+// --- normalize backend data ---
+const extractData = (res: any) => {
+  if (!res) return [];
+  if (Array.isArray(res)) return res;
+  if (res.data) return extractData(res.data);
+  if (res.blacklist) return res.blacklist;
+  if (res.feeds) return Array.isArray(res.feeds) ? res.feeds : [res.feeds];
+  if (res.host) return [res.host];
+  if (res.ports) return Array.isArray(res.ports) ? res.ports : [res.ports];
+  if (res.topPorts) return res.topPorts?.topports ?? [];
+  if (res.feedsNormalized) return [res.feedsNormalized];
+  return [res];
+};
+
+type Section = {
+  title: string;
+  endpoint: string;
+  needsInput?: boolean;
+  inputLabel?: string;
+  queryParam?: string;
+};
+
+const sections: Section[] = [
+  { title: "VirusTotal - IP Scan", endpoint: "/vt/ip/", needsInput: true, inputLabel: "IP Address" },
+  { title: "VirusTotal - Domain Scan", endpoint: "/vt/domain/", needsInput: true, inputLabel: "Domain" },
+  { title: "VirusTotal - File Hash Scan", endpoint: "/vt/file/", needsInput: true, inputLabel: "File Hash" },
+  { title: "AbuseIPDB - Check IP", endpoint: "/ab/ip/", needsInput: true, inputLabel: "IP Address" },
+  { title: "AbuseIPDB - Blacklist", endpoint: "/ab/blacklist" },
+  { title: "Shodan - Host Info", endpoint: "/sh/host/", needsInput: true, inputLabel: "IP Address" },
+  { title: "Shodan - Ports", endpoint: "/sh/ports" },
+  { title: "Shodan - Count", endpoint: "/sh/count?query=apache" }, // demo query
+  { title: "Shodan - My IP", endpoint: "/sh/myip" },
+  { title: "SANS - IP", endpoint: "/sans/ip/", needsInput: true, inputLabel: "IP Address" },
+  { title: "SANS - Top Sources", endpoint: "/sans/top-sources" },
+  { title: "SANS - InfoCon", endpoint: "/sans/infocon" },
+  { title: "SANS - IP Details", endpoint: "/sans/ipdetails/", needsInput: true, inputLabel: "IP Address" },
+  { title: "SANS - Port", endpoint: "/sans/port/", needsInput: true, inputLabel: "Port" },
+  { title: "SANS - Top Ports", endpoint: "/sans/top-ports", needsInput: true, inputLabel: "Limit (e.g. 10)", queryParam: "limit" },
+];
 
 export default function Feeds() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [severityFilter, setSeverityFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
+  const [inputValues, setInputValues] = useState<{ [key: string]: string }>({});
+  const [results, setResults] = useState<{ [key: string]: any[] }>({});
+  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
 
-  const itemsPerPage = 20;
-
-  const filteredThreats = mockThreats.filter((threat) => {
-    const matchesSearch =
-      threat.indicator.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      threat.threatType.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSeverity = severityFilter === "all" || threat.severity === severityFilter;
-    const matchesType = typeFilter === "all" || threat.type === typeFilter;
-    return matchesSearch && matchesSeverity && matchesType;
-  });
-
-  const totalPages = Math.ceil(filteredThreats.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedThreats = filteredThreats.slice(startIndex, startIndex + itemsPerPage);
+  const fetchData = async (section: Section) => {
+    setLoading((prev) => ({ ...prev, [section.title]: true }));
+    try {
+      let url = API_BASE + section.endpoint;
+      if (section.needsInput && inputValues[section.title]) {
+        if (section.queryParam) {
+          url += `?${section.queryParam}=${encodeURIComponent(inputValues[section.title])}`;
+        } else {
+          url += encodeURIComponent(inputValues[section.title]);
+        }
+      }
+      const res = await axios.get(url);
+      const data = extractData(res.data);
+      setResults((prev) => ({ ...prev, [section.title]: data }));
+    } catch (err: any) {
+      setResults((prev) => ({
+        ...prev,
+        [section.title]: [{ error: err.message }],
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, [section.title]: false }));
+    }
+  };
 
   return (
-    <motion.div
-      className="space-y-8"
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="flex items-center gap-3">
-        <Database className="w-7 h-7 text-primary" />
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">Threat Feeds</h1>
-      </div>
-
-      <motion.div whileHover={{ scale: 1.01 }} transition={{ duration: 0.3 }}>
-        <Card className="bg-card border-border shadow-xl rounded-2xl">
+    <div className="space-y-6">
+      {sections.map((section) => (
+        <Card key={section.title} className="border-border shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-foreground text-lg">
-              <Filter className="w-4 h-4" />
-              Filters & Search
-            </CardTitle>
+            <CardTitle>{section.title}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search indicators or threat types..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-input text-foreground"
-                  />
-                </div>
-              </div>
-
-              <Select value={severityFilter} onValueChange={setSeverityFilter}>
-                <SelectTrigger className="w-full lg:w-48">
-                  <SelectValue placeholder="Severity" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Severities</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full lg:w-32">
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="ip">IP</SelectItem>
-                  <SelectItem value="domain">Domain</SelectItem>
-                  <SelectItem value="hash">Hash</SelectItem>
-                  <SelectItem value="url">URL</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button variant="outline" size="icon" className="hover:rotate-180 transition-transform duration-500">
-                <RefreshCw className="w-4 h-4" />
+          <CardContent>
+            <div className="flex gap-3 mb-4">
+              {section.needsInput && (
+                <Input
+                  placeholder={section.inputLabel || "Enter value"}
+                  value={inputValues[section.title] || ""}
+                  onChange={(e) =>
+                    setInputValues((prev) => ({
+                      ...prev,
+                      [section.title]: e.target.value,
+                    }))
+                  }
+                />
+              )}
+              <Button
+                onClick={() => fetchData(section)}
+                disabled={loading[section.title]}
+              >
+                {loading[section.title] ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Fetch"
+                )}
               </Button>
             </div>
 
-            <div className="text-sm text-muted-foreground">
-              Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredThreats.length)} of{" "}
-              {filteredThreats.length} indicators
-            </div>
+            {results[section.title] && results[section.title].length > 0 && (
+              <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      {Object.keys(results[section.title][0]).map((key) => (
+                        <TableHead key={key}>{key}</TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {results[section.title].map((row, idx) => (
+                      <TableRow key={idx}>
+                        {Object.entries(row).map(([k, v]) => {
+                          const val = formatValue(k, v);
+                          return val === null ? null : (
+                            <TableCell key={k}>{val}</TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
-      </motion.div>
-
-      <motion.div whileHover={{ scale: 1.005 }} transition={{ duration: 0.3 }}>
-        <Card className="bg-card border-border shadow-xl rounded-2xl overflow-hidden">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border bg-muted/30">
-                  <TableHead className="text-muted-foreground">Indicator</TableHead>
-                  <TableHead className="text-muted-foreground">Type</TableHead>
-                  <TableHead className="text-muted-foreground">Threat Type</TableHead>
-                  <TableHead className="text-muted-foreground">Severity</TableHead>
-                  <TableHead className="text-muted-foreground">Confidence</TableHead>
-                  <TableHead className="text-muted-foreground">Source</TableHead>
-                  <TableHead className="text-muted-foreground">Timestamp</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedThreats.map((threat) => (
-                  <TableRow
-                    key={threat.id}
-                    className="border-border transition-colors hover:bg-accent/30"
-                  >
-                    <TableCell className="font-mono text-sm text-foreground max-w-48 truncate">
-                      {threat.indicator}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs px-2 py-0.5">
-                        {threat.type.toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-foreground">{threat.threatType}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs px-2 py-0.5 border ${getSeverityBadgeClass(threat.severity)}`}
-                      >
-                        {threat.severity.toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-foreground">{threat.confidence}%</TableCell>
-                    <TableCell className="text-muted-foreground">{threat.source}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {new Date(threat.timestamp).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      <div className="flex justify-between items-center pt-4">
-        <Button
-          variant="outline"
-          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
-          className="transition-all"
-        >
-          Previous
-        </Button>
-
-        <span className="text-sm text-muted-foreground">
-          Page {currentPage} of {totalPages}
-        </span>
-
-        <Button
-          variant="outline"
-          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-          disabled={currentPage === totalPages}
-          className="transition-all"
-        >
-          Next
-        </Button>
-      </div>
-    </motion.div>
+      ))}
+    </div>
   );
 }
