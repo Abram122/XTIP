@@ -18,9 +18,7 @@ export async function updateProfile(payload: {
     bio: string
     sector: string
 }) {
-    const res = await axios.patch(`${API_BASE}/user/updateprofile`, payload, {
-        withCredentials: true,
-    })
+    const res = await axios.patch(`${API_BASE}/user/updateprofile`, payload)
     return res.data
 }
 
