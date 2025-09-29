@@ -13,7 +13,7 @@ import indexRoutes from "./Routes/index.js"
 app.use(json())
 app.use(
   cors({
-    origin: "https://ctip-awnv.vercel.app",
+    origin: "https://xtip.vercel.app",
     credentials: true,
   })
 )
