@@ -31,14 +31,14 @@ export default function LoginPage() {
 
         {/* Auth Options */}
         <CardContent className="relative z-10 space-y-6">
-          <AuthButtons />
+          {/* <AuthButtons /> */}
 
           {/* Divider */}
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <div className="h-px flex-1 bg-border" />
             <span className="text-xs text-muted-foreground">OR</span>
             <div className="h-px flex-1 bg-border" />
-          </div>
+          </div> */}
 
           {/* Email Button */}
           <Link to="/login-form">

@@ -20,23 +20,23 @@ export default function AuthButtons() {
       <h2 className="text-center text-2xl font-bold text-foreground">
         Sign in to your account
       </h2>
-      <p className="text-center text-muted-foreground text-sm">
+      {/* <p className="text-center text-muted-foreground text-sm">
         Choose one of the following providers
-      </p>
+      </p> */}
 
-      <div className="flex flex-col gap-3">
+      {/* <div className="flex flex-col gap-3"> */}
         {/* Google */}
-        <Button
+        {/* <Button
           onClick={() => signIn("google")}
           variant="outline"
           className="flex items-center justify-center gap-3 w-full py-5 rounded-xl text-base font-medium transition-colors hover:bg-accent/50 dark:hover:bg-accent/30"
         >
           <FcGoogle className="w-5 h-5" />
           <span>Continue with Google</span>
-        </Button>
+        </Button> */}
 
         {/* GitHub */}
-        <Button
+        {/* <Button
           onClick={() => signIn("github")}
           variant="outline"
           className="flex items-center justify-center gap-3 w-full py-5 rounded-xl text-base font-medium transition-colors hover:bg-accent/50 dark:hover:bg-accent/30"
@@ -44,7 +44,7 @@ export default function AuthButtons() {
           <FaGithub className="w-6 h-6 text-gray-800 dark:text-gray-200" />
           <span>Continue with GitHub</span>
         </Button>
-      </div>
+      </div> */}
 
       {/* Links */}
       <p className="text-center text-xs text-muted-foreground mt-2">

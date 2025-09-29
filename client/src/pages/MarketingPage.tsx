@@ -25,7 +25,7 @@ const fadeUp = {
 function AuthButtons({ handleLogin }: { handleLogin: (provider: "google" | "github") => void }) {
     return (
         <div className="flex flex-col gap-3">
-            <Button
+            {/* <Button
                 variant="outline"
                 className="flex items-center gap-2 rounded-xl py-5 text-base font-medium shadow-sm hover:shadow-md transition"
                 onClick={() => handleLogin("google")}
@@ -40,7 +40,7 @@ function AuthButtons({ handleLogin }: { handleLogin: (provider: "google" | "gith
             >
                 <FaGithub className="w-6 h-6" />
                 Continue with GitHub
-            </Button>
+            </Button> */}
             <Button variant="outline" asChild className="rounded-xl py-5 text-base font-medium shadow-sm hover:shadow-md transition">
                 <Link to="/login" className="flex items-center gap-2 w-full justify-center">
                     <FaEnvelope className="w-6 h-6 text-blue-500" />

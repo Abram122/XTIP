@@ -254,7 +254,7 @@ export function AppSidebar() {
                         <DialogTitle className="text-xl font-semibold">Welcome Back</DialogTitle>
                       </DialogHeader>
                       <div className="flex flex-col gap-3 pt-4">
-                        <Button
+                        {/* <Button
                           variant="outline"
                           className="flex items-center gap-3 h-12 text-base hover:scale-[1.02] transition-transform"
                           onClick={() => handleLogin("google")}
@@ -269,7 +269,7 @@ export function AppSidebar() {
                         >
                           <FaGithub className="w-5 h-5" />
                           Continue with GitHub
-                        </Button>
+                        </Button> */}
                         <Button variant="outline" asChild className="h-12">
                           <Link to="/login-form" className="flex items-center gap-3 text-base hover:scale-[1.02] transition-transform">
                             <FaEnvelope className="w-5 h-5 text-blue-500" />
