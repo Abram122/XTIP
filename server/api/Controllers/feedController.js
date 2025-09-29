@@ -8,6 +8,22 @@ dotenv.config();
 const VT_API_KEY = process.env.VIRUSTOTAL_API_KEY;
 const ABUSE_API_KEY = process.env.ABUSEIPDB_API_KEY;
 const ABUSE_BASE = "https://api.abuseipdb.com/api/v2";
+const SHODAN_KEY = process.env.SHODAN_API_KEY;
+const SHODAN_BASE = "https://api.shodan.io";
+const SANS_BASE = "https://isc.sans.edu/api";
+
+const normalize = (data, type, source = "SANS ISC") => {
+  return {
+    indicator: data.indicator || data.ip || data.port || "unknown",
+    type,
+    threatType: data.threatType || "suspicious activity",
+    severity: data.severity || severityEnum.MEDIUM,
+    confidence: data.confidence || 70,
+    source,
+    timestamp: Date.now(),
+    raw: data, // MS- keep original for debugging/advanced use
+  };
+};
 
 const getVirusTotalIPScan = asyncHandler(async (req, res) => {
   const { ip } = req.params;
@@ -167,10 +183,188 @@ const downloadBlacklist = asyncHandler(async (req, res) => {
   });
 });
 
+const shodanGetHostInfo = asyncHandler(async (req, res) => {
+  const { ip } = req.params;
+
+  if (!SHODAN_KEY)
+    return res.status(500).json({ error: "SHODAN_API_KEY not configured" });
+
+  const url = `${SHODAN_BASE}/shodan/host/${encodeURIComponent(
+    ip
+  )}?key=${SHODAN_KEY}`;
+  const response = await axios.get(url, { timeout: 15000 });
+
+  return res.json({ status: httpStatusText.SUCCESS, host: response.data });
+});
+
+const shodanGetPorts = asyncHandler(async (req, res) => {
+  if (!SHODAN_KEY)
+    return res.status(500).json({ error: "SHODAN_API_KEY not configured" });
+
+  const url = `${SHODAN_BASE}/shodan/ports?key=${SHODAN_KEY}`;
+  const response = await axios.get(url, { timeout: 15000 });
+
+  return res.json({ status: httpStatusText.SUCCESS, ports: response.data });
+});
+
+const shodanGetCount = asyncHandler(async (req, res) => {
+  const { query } = req.query;
+  if (!SHODAN_KEY)
+    return res.status(500).json({ error: "SHODAN_API_KEY not configured" });
+  if (!query)
+    return res.status(400).json({ error: "query parameter is required" });
+
+  const url = `${SHODAN_BASE}/shodan/host/count?key=${SHODAN_KEY}&query=${encodeURIComponent(
+    query
+  )}`;
+  const response = await axios.get(url, { timeout: 15000 });
+
+  // MS- Shodan returns an object with 'total' and 'facets' (if requested)
+  return res.json({ status: httpStatusText.SUCCESS, count: response.data });
+});
+
+const shodanGetMyIP = asyncHandler(async (req, res) => {
+  if (!SHODAN_KEY)
+    return res.status(500).json({ error: "SHODAN_API_KEY not configured" });
+
+  const url = `${SHODAN_BASE}/tools/myip?key=${SHODAN_KEY}`;
+  const response = await axios.get(url, { timeout: 10000 });
+
+  // MS- Shodan returns a plain string (e.g. "1.2.3.4") — wrap it
+  return res.json({ status: httpStatusText.SUCCESS, myip: response.data });
+});
+
+const shodanGetApiInfo = asyncHandler(async (req, res) => {
+  if (!SHODAN_KEY)
+    return res.status(500).json({ error: "SHODAN_API_KEY not configured" });
+
+  const url = `${SHODAN_BASE}/api-info?key=${SHODAN_KEY}`;
+  const response = await axios.get(url, { timeout: 10000 });
+
+  // MS- response contains plan info, query credits, etc.
+  return res.json({ status: httpStatusText.SUCCESS, apiInfo: response.data });
+});
+
+const sansGetIP = asyncHandler(async (req, res) => {
+  const { ip } = req.params;
+  const url = `${SANS_BASE}/ip/${encodeURIComponent(ip)}?json`;
+  const response = await axios.get(url, { timeout: 10000 });
+
+  const normalized = normalize(
+    {
+      ...response.data.ip,
+      indicator: ip,
+      type: "ip",
+      threatType: "activity reports",
+    },
+    "ip"
+  );
+
+  return res.json({ status: httpStatusText.SUCCESS, feeds: normalized });
+});
+
+const sansGetTopSources = asyncHandler(async (req, res) => {
+  const url = `${SANS_BASE}/topips?json`;
+  const response = await axios.get(url, { timeout: 10000 });
+
+  const normalized = response.data.topips.map((src) =>
+    normalize(
+      {
+        indicator: src.ip,
+        type: "ip",
+        threatType: "top source",
+        severity: severityEnum.HIGH,
+      },
+      "ip"
+    )
+  );
+
+  return res.json({ status: httpStatusText.SUCCESS, feeds: normalized });
+});
+
+const sansGetInfoCon = asyncHandler(async (_req, res) => {
+  const url = `${SANS_BASE}/infocon?json`;
+  const response = await axios.get(url, { timeout: 5000 });
+
+  const severity =
+    response.data.infocon?.toLowerCase() === "green"
+      ? severityEnum.LOW
+      : response.data.infocon?.toLowerCase() === "yellow"
+      ? severityEnum.MEDIUM
+      : severityEnum.HIGH;
+
+  const normalized = normalize(
+    {
+      indicator: "global",
+      type: "status",
+      threatType: "internet threat level",
+      severity,
+    },
+    "status"
+  );
+
+  return res.json({ status: httpStatusText.SUCCESS, feeds: normalized });
+});
+
+const sansGetIPDetails = asyncHandler(async (req, res) => {
+  const { ip } = req.params;
+  const url = `${SANS_BASE}/ipdetails/${encodeURIComponent(ip)}?json`;
+  const response = await axios.get(url, { timeout: 10000 });
+
+  const normalized = normalize(
+    {
+      ...response.data,
+      indicator: ip,
+      type: "ip",
+      threatType: "detailed ip report",
+    },
+    "ip"
+  );
+
+  return res.json({ status: httpStatusText.SUCCESS, feeds: normalized });
+});
+
+const sansGetPort = asyncHandler(async (req, res) => {
+  const url = `${SANS_BASE}/ports?json`;
+  const response = await axios.get(url, { timeout: 10000 });
+
+  const normalized = response.data.ports.map((prt) =>
+    normalize(
+      {
+        indicator: prt.port,
+        type: "port",
+        threatType: "top port",
+        severity: severityEnum.HIGH,
+      },
+      "port"
+    )
+  );
+
+  return res.json({ status: httpStatusText.SUCCESS, feeds: normalized });
+});
+
+const sansGetTopPorts = asyncHandler(async (_req, res) => {
+  const url = `${SANS_BASE}/ports?json`;
+  const response = await axios.get(url, { timeout: 10000 });
+
+  return res.json({ status: httpStatusText.SUCCESS, topPorts: response.data });
+});
+
 export default {
   getVirusTotalIPScan,
   getVirusTotalDomainScan,
   getVirusTotalFileHashScan,
   getAbuseIP,
   downloadBlacklist,
+  shodanGetHostInfo,
+  shodanGetPorts,
+  shodanGetCount,
+  shodanGetMyIP,
+  shodanGetApiInfo,
+  sansGetIP,
+  sansGetTopSources,
+  sansGetInfoCon,
+  sansGetIPDetails,
+  sansGetPort,
+  sansGetTopPorts,
 };
