@@ -1,6 +1,6 @@
 # XTIP: All-In-One Threat Intelligence Platform 🛡️
 
-<img alt="XTIP Logo" src="https://github.com/user-attachments/assets/a738e977-eb02-4565-b4f3-ddf7824283e5" />
+<img width="994" height="374" alt="XTIP Logo" src="https://github.com/user-attachments/assets/0b8378e4-2595-46f2-acdd-867efe8b8029" />
 
 ---
 
