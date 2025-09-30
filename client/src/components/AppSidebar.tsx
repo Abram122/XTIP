@@ -1,30 +1,55 @@
 import {
-  BarChart3, Database, Home, Settings, Activity, AlertTriangle, Newspaper,
-  Sun, Moon, User, LogIn, LogOut, Shield, Layout, Sparkles, ChevronDown
-} from "lucide-react"
-import { FaEnvelope } from "react-icons/fa"
-import { Link, NavLink, useLocation } from "react-router-dom"
-import { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+  BarChart3,
+  Database,
+  Home,
+  Settings,
+  Activity,
+  AlertTriangle,
+  Newspaper,
+  Sun,
+  Moon,
+  User,
+  LogIn,
+  LogOut,
+  Shield,
+  Layout,
+  Sparkles,
+  ChevronDown,
+} from "lucide-react";
+import { FaEnvelope } from "react-icons/fa";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
-  SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { supabase } from "@/lib/supabaseClient"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+} from "@/components/ui/sidebar";
+import { supabase } from "@/lib/supabaseClient";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "./ui/button"
-import { FcGoogle } from "react-icons/fc"
-import { FaGithub } from "react-icons/fa"
-import { useUnifiedUser } from "@/hooks/useUnifiedUser"
-import { logout } from "@/services/api"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/dropdown-menu";
+import { Button } from "./ui/button";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
+import { useUnifiedUser } from "@/hooks/useUnifiedUser";
+import { logout } from "@/services/api";
+import { cn } from "@/lib/utils";
 
 const menuItems = [
   { title: "Overview", url: "/overview", icon: Layout },
@@ -34,52 +59,50 @@ const menuItems = [
   { title: "Incidents", url: "/incidents", icon: Shield },
   { title: "Intel News", url: "/news", icon: Newspaper },
   { title: "Settings", url: "/settings", icon: Settings },
-]
+];
 
 export function AppSidebar() {
-  const { state } = useSidebar()
-  const location = useLocation()
-  const collapsed = state === "collapsed"
-  const { user } = useUnifiedUser()
-  const [isDark, setIsDark] = useState(false)
-  const [open, setOpen] = useState(false)
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  const { state } = useSidebar();
+  const location = useLocation();
+  const collapsed = state === "collapsed";
+  const { user } = useUnifiedUser();
+  const [isDark, setIsDark] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const handleLogin = (provider: "google" | "github") => {
-    supabase.auth.signInWithOAuth({ provider })
-    setOpen(false)
-  }
+    supabase.auth.signInWithOAuth({ provider });
+    setOpen(false);
+  };
 
   const handleLogout = async () => {
-    await Promise.all([
-      supabase.auth.signOut(),
-      logout()
-    ]).then(() => {
-      window.location.href = "/"
-    })
-  }
+    await Promise.all([supabase.auth.signOut(), logout()]).then(() => {
+      window.location.href = "/";
+    });
+  };
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") === "dark"
-    setIsDark(savedTheme)
-    document.documentElement.classList.toggle("dark", savedTheme)
-  }, [])
+    const savedTheme = localStorage.getItem("theme") === "dark";
+    setIsDark(savedTheme);
+    document.documentElement.classList.toggle("dark", savedTheme);
+  }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark)
-    localStorage.setItem("theme", isDark ? "dark" : "light")
-  }, [isDark])
+    document.documentElement.classList.toggle("dark", isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }, [isDark]);
 
-  const isActive = (path: string) => location.pathname.startsWith(path)
+  const isActive = (path: string) => location.pathname.startsWith(path);
 
-  const navLinkClasses = ({ isActive }: { isActive: boolean }) => cn(
-    "group relative flex items-center gap-4 px-4 py-3 rounded-xl text-base font-medium",
-    "transition-all duration-300 ease-in-out",
-    isActive
-      ? "bg-primary/15 text-primary shadow-sm"
-      : "text-foreground/70 hover:bg-accent/50 hover:text-foreground",
-    !collapsed && "backdrop-blur-sm"
-  )
+  const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      "group relative flex items-center gap-4 px-4 py-3 rounded-xl text-base font-medium",
+      "transition-all duration-300 ease-in-out",
+      isActive
+        ? "bg-primary/15 text-primary shadow-sm"
+        : "text-foreground/70 hover:bg-accent/50 hover:text-foreground",
+      !collapsed && "backdrop-blur-sm"
+    );
 
   return (
     <motion.div
@@ -97,13 +120,23 @@ export function AppSidebar() {
           >
             <Link to="/" aria-label="XTIP Dashboard">
               <div className="flex items-center gap-3 px-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center shadow-lg">
-                  <Sparkles className="w-5 h-5 text-primary-foreground" />
+                {/* Logo container */}
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <img
+                    src="/logo.png"
+                    alt="XTIP Logo"
+                    className="w-10 h-10 object-contain"
+                  />
                 </div>
+
                 {!collapsed && (
                   <div className="flex flex-col">
-                    <span className="font-bold text-foreground">XTIP Dashboard</span>
-                    <span className="text-xs text-muted-foreground">Enterprise</span>
+                    <span className="font-bold text-foreground">
+                      XTIP Dashboard
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Enterprise
+                    </span>
                   </div>
                 )}
               </div>
@@ -138,10 +171,13 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
                         <NavLink to={item.url} className={navLinkClasses}>
-                          <item.icon className={cn(
-                            "w-5 h-5 flex-shrink-0 transition-all duration-300",
-                            hoveredItem === item.title && "scale-110 text-primary"
-                          )} />
+                          <item.icon
+                            className={cn(
+                              "w-5 h-5 flex-shrink-0 transition-all duration-300",
+                              hoveredItem === item.title &&
+                                "scale-110 text-primary"
+                            )}
+                          />
                           {!collapsed && (
                             <div className="flex items-center justify-between flex-1">
                               <span>{item.title}</span>
@@ -178,9 +214,9 @@ export function AppSidebar() {
                     <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-accent/50 hover:bg-accent/70 transition-colors">
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                         {user.user_metadata?.avatar_url ? (
-                          <img 
-                            src={user.user_metadata.avatar_url} 
-                            alt={user.email} 
+                          <img
+                            src={user.user_metadata.avatar_url}
+                            alt={user.email}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -208,7 +244,10 @@ export function AppSidebar() {
                         View Profile
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-destructive"
+                    >
                       Log Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -251,7 +290,9 @@ export function AppSidebar() {
                   <Dialog open={open} onOpenChange={setOpen}>
                     <DialogContent className="sm:max-w-[425px]">
                       <DialogHeader>
-                        <DialogTitle className="text-xl font-semibold">Welcome Back</DialogTitle>
+                        <DialogTitle className="text-xl font-semibold">
+                          Welcome Back
+                        </DialogTitle>
                       </DialogHeader>
                       <div className="flex flex-col gap-3 pt-4">
                         {/* <Button
@@ -271,7 +312,10 @@ export function AppSidebar() {
                           Continue with GitHub
                         </Button> */}
                         <Button variant="outline" asChild className="h-12">
-                          <Link to="/login-form" className="flex items-center gap-3 text-base hover:scale-[1.02] transition-transform">
+                          <Link
+                            to="/login-form"
+                            className="flex items-center gap-3 text-base hover:scale-[1.02] transition-transform"
+                          >
                             <FaEnvelope className="w-5 h-5 text-blue-500" />
                             Continue with Email
                           </Link>
@@ -286,5 +330,5 @@ export function AppSidebar() {
         </SidebarContent>
       </Sidebar>
     </motion.div>
-  )
+  );
 }

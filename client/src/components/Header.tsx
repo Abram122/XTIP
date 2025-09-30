@@ -7,11 +7,15 @@ export function Header() {
       <SidebarTrigger />
       
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
-          <Shield className="w-6 h-6 text-primary-foreground" />
-        </div>
+         <div className="w-10 h-10 flex items-center justify-center">
+                  <img
+                    src="/logo.png"
+                    alt="XTIP Logo"
+                    className="w-10 h-10 object-contain"
+                  />
+                </div>
         <div>
-          <h1 className="text-xl font-bold text-foreground tracking-tight">CTI Platform MVP</h1>
+          <h1 className="text-xl font-bold text-foreground tracking-tight">XTIP Platform MVP</h1>
           <p className="text-sm text-muted-foreground">Advanced Cyber Threat Intelligence Dashboard</p>
         </div>
       </div>
