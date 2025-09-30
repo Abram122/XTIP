@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw } from "lucide-react";
 
-const API_BASE = "http://localhost:3000/api/feeds";
+const API_BASE = import.meta.env.VITE_API_URL + "/feeds";
 
 // --- format values user-friendly ---
 const formatValue = (key: string, value: any) => {
