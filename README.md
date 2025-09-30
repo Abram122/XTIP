@@ -6,45 +6,48 @@
 
 ## 📖 Overview
 
-**XTIP** is an open-source project that brings together multiple **Threat Intelligence** tools in a single platform.
-It helps security researchers and SOC teams analyze indicators of compromise (**IOCs**) like IP addresses, domains, and hashes.
+**XTIP** (All-in-One Threat Intelligence Platform) is an open-source solution that unifies multiple **Threat Intelligence** tools into one streamlined platform.
 
-XTIP integrates with well-known services such as:
+It enables **security researchers, SOC teams, and analysts** to investigate **indicators of compromise (IOCs)** such as IP addresses, domains, and file hashes with ease and efficiency.
+
+XTIP integrates with industry-leading services, including:
 
 * [VirusTotal](https://www.virustotal.com/)
 * [AbuseIPDB](https://www.abuseipdb.com/)
 * [Pulsedive](https://pulsedive.com/)
 * [Shodan](https://www.shodan.io/)
-* And more...
+* ...and more coming soon!
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
-* 🔍 Lookup for **IP / Domain / Hashes**.
-* 📊 Get detailed reports from multiple Threat Intelligence APIs.
-* 🖥️ User-friendly dashboard with clean UI.
-* 🔑 Authentication & JWT-based authorization.
-* 📩 Email notifications for high-risk results.
-* 🗄️ MongoDB integration for storing and reviewing records.
+* 🔍 **IOC Lookups**: Analyze IPs, domains, and hashes.
+* 📊 **Multi-source Reports**: Aggregate results from top Threat Intelligence APIs.
+* 🖥️ **Intuitive Dashboard**: Modern, user-friendly interface for investigations.
+* 🔑 **Secure Authentication**: Supabase-powered user management + JWT authorization.
+* 📩 **Email Alerts**: Automatic notifications for high-risk findings.
+* 🗄️ **Data Persistence**: MongoDB storage for logs, history, and reporting.
 
 ---
 
 ## 📷 Screenshots
-<img width="1505" height="779" alt="image" src="https://github.com/user-attachments/assets/37a9977d-829b-4cdf-b166-186aa0fd145b" />
-<img width="1500" height="411" alt="image" src="https://github.com/user-attachments/assets/c3ac19dd-f59b-413c-b048-127e2c5502ae" />
-<img width="1645" height="834" alt="image" src="https://github.com/user-attachments/assets/a65e4903-7f78-4227-a3cf-411397221bab" />
-<img width="1914" height="888" alt="image" src="https://github.com/user-attachments/assets/e5fb5a05-7c77-4ed2-a3fc-23467c727fab" />
-<img width="1672" height="556" alt="image" src="https://github.com/user-attachments/assets/8706c3fc-6124-49bd-b743-7c08b5b2f0a6" />
 
 ### Dashboard
 
-<img width="1909" height="921" alt="image" src="https://github.com/user-attachments/assets/619c0d6e-0bc8-4f91-af14-8fb427a63b3e" />
+<img width="1909" height="921" alt="Dashboard" src="https://github.com/user-attachments/assets/619c0d6e-0bc8-4f91-af14-8fb427a63b3e" />  
 
 ### IP Reputation & URL Lookup
 
-<img width="1306" height="740" alt="image" src="https://github.com/user-attachments/assets/ff9fcbc3-1165-459e-a63d-8d650ef32660" />
+<img width="1306" height="740" alt="IP Reputation" src="https://github.com/user-attachments/assets/ff9fcbc3-1165-459e-a63d-8d650ef32660" />  
 
+### More Previews
+
+<img width="1505" height="779" alt="image" src="https://github.com/user-attachments/assets/37a9977d-829b-4cdf-b166-186aa0fd145b" />  
+<img width="1500" height="411" alt="image" src="https://github.com/user-attachments/assets/c3ac19dd-f59b-413c-b048-127e2c5502ae" />  
+<img width="1645" height="834" alt="image" src="https://github.com/user-attachments/assets/a65e4903-7f78-4227-a3cf-411397221bab" />  
+<img width="1914" height="888" alt="image" src="https://github.com/user-attachments/assets/e5fb5a05-7c77-4ed2-a3fc-23467c727fab" />  
+<img width="1672" height="556" alt="image" src="https://github.com/user-attachments/assets/8706c3fc-6124-49bd-b743-7c08b5b2f0a6" />  
 
 ---
 
@@ -64,7 +67,7 @@ cd client
 npm install
 ```
 
-Add the following environment variables in a `.env` file inside `client/`:
+Create a `.env` file inside `client/` and add:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_url
@@ -85,18 +88,18 @@ cd server
 npm install
 ```
 
-Add the following environment variables in a `.env` file inside `server/`:
+Create a `.env` file inside `server/` and configure:
 
 ```env
 MONGO_URI=your_mongo_connection
 VIRUSTOTAL_API_KEY=your_virustotal_key
 ABUSEIPDB_API_KEY=your_abuseipdb_key
-JWT_SECRET=your_jwt_secret
 PULSEDIVE_API_KEY=your_pulsedive_key
-PORT=5000
+SHODAN_API_KEY=your_shodan_api_key
+JWT_SECRET=your_jwt_secret
 EMAIL_USER=your_email
 EMAIL_PASS=your_email_app_password
-SHODAN_API_KEY=your_shodan_api_key
+PORT=5000
 NODE_ENV=development
 ```
 
@@ -110,10 +113,11 @@ npm start
 
 ## 🧪 Usage
 
-1. Open the frontend in your browser (`http://localhost:8080` by default).
-2. Sign up / Sign in.
-3. Enter an **IP, Domain, or Hash** in the lookup form.
-4. Get instant reports from VirusTotal, AbuseIPDB, Pulsedive, and Shodan.
+1. Start both backend and frontend services.
+2. Open the app in your browser at: [http://localhost:8080](http://localhost:8080).
+3. Register or log in.
+4. Submit an **IP, domain, or hash** to analyze.
+5. Receive a unified report from VirusTotal, AbuseIPDB, Pulsedive, and Shodan.
 
 ---
 
@@ -122,23 +126,30 @@ npm start
 * **Frontend**: React + Vite + TailwindCSS
 * **Backend**: Node.js + Express.js
 * **Database**: MongoDB
-* **Auth**: Supabase (for user management) + JWT
-* **Threat Intelligence APIs**: VirusTotal, AbuseIPDB, Pulsedive, Shodan and more.......
+* **Authentication**: Supabase + JWT
+* **Threat Intel Integrations**: VirusTotal, AbuseIPDB, Pulsedive, Shodan (with support for more APIs coming soon).
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request if you’d like to improve XTIP.
+Contributions are highly encouraged! 🎉
+
+* Fork the repo
+* Create a new branch (`feature/new-feature`)
+* Commit your changes
+* Open a pull request
+
+Please check existing issues or open a new one to discuss improvements.
 
 ---
 
 ## 📜 License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for details.
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Authors
 
-Developed with ❤️ by **XTIP Team**
+Developed with ❤️ by the **XTIP Team**
