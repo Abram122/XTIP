@@ -95,14 +95,14 @@ export function AppSidebar() {
             transition={{ delay: 0.2 }}
             className="p-4"
           >
-            <Link to="/" aria-label="CTIP Dashboard">
+            <Link to="/" aria-label="XTIP Dashboard">
               <div className="flex items-center gap-3 px-2">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center shadow-lg">
                   <Sparkles className="w-5 h-5 text-primary-foreground" />
                 </div>
                 {!collapsed && (
                   <div className="flex flex-col">
-                    <span className="font-bold text-foreground">CTIP Dashboard</span>
+                    <span className="font-bold text-foreground">XTIP Dashboard</span>
                     <span className="text-xs text-muted-foreground">Enterprise</span>
                   </div>
                 )}

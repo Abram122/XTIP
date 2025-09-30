@@ -150,7 +150,7 @@ export default function MarketingPage() {
                         animate="show"
                         className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
                     >
-                        Cyber Threat Intelligence Platform
+                        All-In-One Threat Intelligence Platform 
                     </motion.h1>
                     <motion.p
                         variants={fadeUp}
